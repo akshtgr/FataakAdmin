@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
+import './firebase_options.dart'; // Import the firebase_options.dart file
 import './providers/auth_provider.dart';
 import './providers/product_provider.dart';
 import './providers/order_provider.dart';
@@ -10,7 +11,10 @@ import './screens/product_list_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  // Use the DefaultFirebaseOptions.currentPlatform to initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const FataakAdminApp());
 }
 
