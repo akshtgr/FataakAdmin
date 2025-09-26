@@ -15,13 +15,12 @@ void main() async {
 }
 
 class FataakAdminApp extends StatelessWidget {
-  const FataakAdminApp({super.key}); // Corrected constructor syntax
+  const FataakAdminApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // This syntax is more explicit and solves the error
         ChangeNotifierProvider(create: (ctx) => AuthProvider()),
         ChangeNotifierProvider(create: (ctx) => ProductProvider()),
         ChangeNotifierProvider(create: (ctx) => OrderProvider()),

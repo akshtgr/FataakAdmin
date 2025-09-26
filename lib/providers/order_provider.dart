@@ -27,7 +27,7 @@ class OrderProvider with ChangeNotifier {
       }).toList();
       notifyListeners();
     } catch (e) {
-      print(e);
+      // Handle error appropriately
     }
   }
 
@@ -52,7 +52,7 @@ class OrderProvider with ChangeNotifier {
 
       fetchOrders();
     } catch (e) {
-      print(e);
+      // Handle error appropriately
     }
   }
 
@@ -61,7 +61,7 @@ class OrderProvider with ChangeNotifier {
       await _ordersCollection.doc(orderId).delete();
       fetchOrders();
     } catch (e) {
-      print(e);
+      // Handle error appropriately
     }
   }
 }

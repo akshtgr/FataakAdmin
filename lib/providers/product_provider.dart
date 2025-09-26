@@ -26,7 +26,7 @@ class ProductProvider with ChangeNotifier {
       }).toList();
       notifyListeners();
     } catch (e) {
-      print(e);
+      // Handle error appropriately
     }
   }
 
@@ -41,7 +41,7 @@ class ProductProvider with ChangeNotifier {
       });
       fetchProducts();
     } catch (e) {
-      print(e);
+      // Handle error appropriately
     }
   }
 
@@ -56,7 +56,7 @@ class ProductProvider with ChangeNotifier {
       });
       fetchProducts();
     } catch (e) {
-      print(e);
+      // Handle error appropriately
     }
   }
 
@@ -65,7 +65,7 @@ class ProductProvider with ChangeNotifier {
       await _productsCollection.doc(productId).delete();
       fetchProducts();
     } catch (e) {
-      print(e);
+      // Handle error appropriately
     }
   }
 }
