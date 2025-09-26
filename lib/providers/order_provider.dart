@@ -1,67 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/order.dart' as model; // Added a prefix
+import '../models/order.dart' as model; // Use a prefix to avoid name conflicts
 
 class OrderProvider with ChangeNotifier {
-  List<model.Order> _orders = []; // Used the prefix
+  // Replace Firebase with a local list for demonstration
+  final List<model.Order> _orders = [
+    model.Order(
+      id: 'o1',
+      customerName: 'Jane Smith',
+      items: [
+        {'name': 'Sample Item A', 'quantity': 1, 'productId': 'p1'},
+        {'name': 'Sample Item B', 'quantity': 2, 'productId': 'p2'}
+      ],
+      totalPrice: 295.0,
+      address: '456 Oak Avenue, Someplace',
+      status: 'Pending',
+    ),
+  ];
 
-  List<model.Order> get orders => [..._orders]; // Used the prefix
+  List<model.Order> get orders => [..._orders];
 
-  final CollectionReference _ordersCollection =
-  FirebaseFirestore.instance.collection('orders');
-
-  Future<void> fetchOrders() async {
-    try {
-      final snapshot =
-      await _ordersCollection.where('status', isEqualTo: 'Pending').get();
-      _orders = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return model.Order( // Used the prefix
-          id: doc.id,
-          customerName: data['customerName'],
-          items: List<Map<String, dynamic>>.from(data['items']),
-          totalPrice: data['totalPrice'],
-          address: data['address'],
-          status: data['status'],
-        );
-      }).toList();
-      notifyListeners();
-    } catch (e) {
-      // Handle error appropriately
-    }
+  void fetchOrders() {
+    // Data is already loaded, just notify
+    notifyListeners();
   }
 
-  Future<void> confirmOrder(model.Order order) async { // Used the prefix
-    try {
-      // Create a write batch to update multiple documents atomically
-      WriteBatch batch = FirebaseFirestore.instance.batch();
-
-      // Update product stock
-      for (var item in order.items) {
-        final productRef = FirebaseFirestore.instance
-            .collection('products')
-            .doc(item['productId']);
-        batch.update(productRef, {'stock': FieldValue.increment(-item['quantity'])});
-      }
-
-      // Update order status
-      final orderRef = _ordersCollection.doc(order.id);
-      batch.update(orderRef, {'status': 'Confirmed'});
-
-      await batch.commit();
-
-      fetchOrders();
-    } catch (e) {
-      // Handle error appropriately
-    }
+  void confirmOrder(model.Order order) {
+    // In this sample, confirming an order just removes it from the list
+    _orders.removeWhere((o) => o.id == order.id);
+    notifyListeners();
   }
 
-  Future<void> cancelOrder(String orderId) async {
-    try {
-      await _ordersCollection.doc(orderId).delete();
-      fetchOrders();
-    } catch (e) {
-      // Handle error appropriately
-    }
+  void cancelOrder(String orderId) {
+    _orders.removeWhere((o) => o.id == orderId);
+    notifyListeners();
   }
 }

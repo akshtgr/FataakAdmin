@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
-import './firebase_options.dart'; // Import the firebase_options.dart file
-import './providers/auth_provider.dart';
 import './providers/product_provider.dart';
 import './providers/order_provider.dart';
-import './screens/login_screen.dart';
 import './screens/product_list_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Use the DefaultFirebaseOptions.currentPlatform to initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Firebase initialization is no longer needed
   runApp(const FataakAdminApp());
 }
 
@@ -25,7 +18,6 @@ class FataakAdminApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (ctx) => AuthProvider()),
         ChangeNotifierProvider(create: (ctx) => ProductProvider()),
         ChangeNotifierProvider(create: (ctx) => OrderProvider()),
       ],
@@ -35,10 +27,7 @@ class FataakAdminApp extends StatelessWidget {
           primarySwatch: Colors.green,
           scaffoldBackgroundColor: Colors.white,
         ),
-        home: Consumer<AuthProvider>(
-          builder: (ctx, auth, _) =>
-          auth.isAuthenticated ? const ProductListScreen() : const LoginScreen(),
-        ),
+        home: const ProductListScreen(), // Set ProductListScreen as the home
       ),
     );
   }
