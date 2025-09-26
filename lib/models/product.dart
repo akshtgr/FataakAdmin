@@ -1,3 +1,4 @@
+// lib/models/product.dart
 class Product {
   final String id;
   final String name;
@@ -16,4 +17,28 @@ class Product {
     this.isOutOfStock = false,
     this.imageUrl,
   });
+
+  // Add these methods
+  factory Product.fromJson(Map<String, dynamic> json, String id) {
+    return Product(
+      id: id,
+      name: json['name'],
+      marketPrice: json['marketPrice'].toDouble(),
+      ourPrice: json['ourPrice'].toDouble(),
+      stock: json['stock'],
+      isOutOfStock: json['isOutOfStock'],
+      imageUrl: json['imageUrl'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'marketPrice': marketPrice,
+      'ourPrice': ourPrice,
+      'stock': stock,
+      'isOutOfStock': isOutOfStock,
+      'imageUrl': imageUrl,
+    };
+  }
 }

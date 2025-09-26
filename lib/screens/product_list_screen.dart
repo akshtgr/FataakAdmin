@@ -1,3 +1,4 @@
+// lib/screens/product_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
@@ -12,10 +13,14 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class ProductListScreenState extends State<ProductListScreen> {
+  Future<void> _refreshProducts(BuildContext context) async {
+    await Provider.of<ProductProvider>(context, listen: false).fetchProducts();
+  }
+
   @override
   void initState() {
     super.initState();
-    Provider.of<ProductProvider>(context, listen: false).fetchProducts();
+    _refreshProducts(context);
   }
 
   @override
@@ -26,6 +31,10 @@ class ProductListScreenState extends State<ProductListScreen> {
       appBar: AppBar(
         title: const Text('Products'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => _refreshProducts(context),
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
@@ -48,26 +57,29 @@ class ProductListScreenState extends State<ProductListScreen> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: productProvider.products.length,
-        itemBuilder: (ctx, i) {
-          final product = productProvider.products[i];
-          return ListTile(
-            title: Text(product.name),
-            subtitle: Text(
-                'Our Price: ${product.ourPrice} | Stock: ${product.stock}'),
-            trailing: IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ProductEditScreen(product: product),
-                  ),
-                );
-              },
-            ),
-          );
-        },
+      body: RefreshIndicator(
+        onRefresh: () => _refreshProducts(context),
+        child: ListView.builder(
+          itemCount: productProvider.products.length,
+          itemBuilder: (ctx, i) {
+            final product = productProvider.products[i];
+            return ListTile(
+              title: Text(product.name),
+              subtitle: Text(
+                  'Our Price: ${product.ourPrice} | Stock: ${product.stock}'),
+              trailing: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ProductEditScreen(product: product),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
       ),
     );
   }
