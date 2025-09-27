@@ -20,6 +20,7 @@ class ProductListScreenState extends State<ProductListScreen> {
   @override
   void initState() {
     super.initState();
+    // Fetch products when the screen is initialized
     _refreshProducts(context);
   }
 
@@ -64,6 +65,12 @@ class ProductListScreenState extends State<ProductListScreen> {
           itemBuilder: (ctx, i) {
             final product = productProvider.products[i];
             return ListTile(
+              leading: CircleAvatar(
+                // Use a placeholder if the image URL is null or empty
+                backgroundImage: (product.imageUrl != null && product.imageUrl.isNotEmpty)
+                    ? NetworkImage(product.imageUrl)
+                    : const AssetImage('assets/placeholder.png') as ImageProvider,
+              ),
               title: Text(product.name),
               subtitle: Text(
                   'Our Price: ${product.ourPrice} | Stock: ${product.stock}'),

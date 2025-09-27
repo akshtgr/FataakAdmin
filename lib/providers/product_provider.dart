@@ -17,7 +17,6 @@ class ProductProvider with ChangeNotifier {
           .toList();
       notifyListeners();
     } catch (error) {
-      print(error);
       rethrow;
     }
   }
@@ -32,6 +31,7 @@ class ProductProvider with ChangeNotifier {
         ourPrice: product.ourPrice,
         stock: product.stock,
         inStock: product.inStock,
+        imageUrl: product.imageUrl, // This was missing
         unit: product.unit,
         category: product.category,
         isFeatured: product.isFeatured,
@@ -42,7 +42,6 @@ class ProductProvider with ChangeNotifier {
       _products.add(newProduct);
       notifyListeners();
     } catch (error) {
-      print(error);
       rethrow;
     }
   }
@@ -58,7 +57,6 @@ class ProductProvider with ChangeNotifier {
         _products[prodIndex] = updatedProduct;
         notifyListeners();
       } catch (error) {
-        print(error);
         rethrow;
       }
     }
@@ -75,7 +73,6 @@ class ProductProvider with ChangeNotifier {
     } catch (error) {
       _products.insert(existingProductIndex, existingProduct);
       notifyListeners();
-      print(error);
       rethrow;
     }
   }

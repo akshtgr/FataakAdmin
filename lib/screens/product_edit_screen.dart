@@ -15,6 +15,7 @@ class ProductEditScreen extends StatefulWidget {
 class ProductEditScreenState extends State<ProductEditScreen> {
   final _formKey = GlobalKey<FormState>();
   late String _name;
+  late String _imageUrl; // Add this line
   late double _marketPrice;
   late double _ourPrice;
   late int _stock;
@@ -22,12 +23,12 @@ class ProductEditScreenState extends State<ProductEditScreen> {
   late String _unit;
   late String _category;
   late String _tags;
-  late String _imageUrl;
 
   @override
   void initState() {
     super.initState();
     _name = widget.product?.name ?? '';
+    _imageUrl = widget.product?.imageUrl ?? ''; // Add this line
     _marketPrice = widget.product?.marketPrice ?? 0.0;
     _ourPrice = widget.product?.ourPrice ?? 0.0;
     _stock = widget.product?.stock ?? 0;
@@ -35,7 +36,6 @@ class ProductEditScreenState extends State<ProductEditScreen> {
     _unit = widget.product?.unit ?? 'kg';
     _category = widget.product?.category ?? 'vegetable';
     _tags = widget.product?.tags.join(', ') ?? 'fresh';
-    _imageUrl = widget.product?.imageUrl ?? '';
   }
 
   void _saveForm() {
@@ -50,6 +50,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
           Product(
             id: DateTime.now().toString(),
             name: _name,
+            imageUrl: _imageUrl, // Add this line
             marketPrice: _marketPrice,
             ourPrice: _ourPrice,
             stock: _stock,
@@ -59,7 +60,6 @@ class ProductEditScreenState extends State<ProductEditScreen> {
             tags: _tags.split(',').map((s) => s.trim()).toList(),
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
-            imageUrl: _imageUrl,
           ),
         );
       } else {
@@ -68,6 +68,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
           Product(
             id: widget.product!.id,
             name: _name,
+            imageUrl: _imageUrl, // Add this line
             marketPrice: _marketPrice,
             ourPrice: _ourPrice,
             stock: _stock,
@@ -77,7 +78,6 @@ class ProductEditScreenState extends State<ProductEditScreen> {
             tags: _tags.split(',').map((s) => s.trim()).toList(),
             createdAt: widget.product!.createdAt,
             updatedAt: DateTime.now(),
-            imageUrl: _imageUrl,
           ),
         );
       }
@@ -111,6 +111,13 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                 onSaved: (value) => _name = value!,
               ),
               TextFormField(
+                initialValue: _imageUrl,
+                decoration: const InputDecoration(labelText: 'Image URL'),
+                validator: (value) =>
+                value!.isEmpty ? 'Please enter an image URL' : null,
+                onSaved: (value) => _imageUrl = value!,
+              ),
+              TextFormField(
                 initialValue: _marketPrice.toString(),
                 decoration: const InputDecoration(labelText: 'Market Price'),
                 keyboardType: TextInputType.number,
@@ -136,7 +143,8 @@ class ProductEditScreenState extends State<ProductEditScreen> {
               ),
               TextFormField(
                 initialValue: _unit,
-                decoration: const InputDecoration(labelText: 'Unit (e.g., kg, piece)'),
+                decoration:
+                const InputDecoration(labelText: 'Unit (e.g., kg, piece)'),
                 validator: (value) =>
                 value!.isEmpty ? 'Please enter a unit' : null,
                 onSaved: (value) => _unit = value!,
@@ -150,17 +158,11 @@ class ProductEditScreenState extends State<ProductEditScreen> {
               ),
               TextFormField(
                 initialValue: _tags,
-                decoration: const InputDecoration(labelText: 'Tags (comma-separated)'),
+                decoration:
+                const InputDecoration(labelText: 'Tags (comma-separated)'),
                 validator: (value) =>
                 value!.isEmpty ? 'Please enter at least one tag' : null,
                 onSaved: (value) => _tags = value!,
-              ),
-              TextFormField(
-                initialValue: _imageUrl,
-                decoration: const InputDecoration(labelText: 'Image URL'),
-                validator: (value) =>
-                value!.isEmpty ? 'Please enter an image URL' : null,
-                onSaved: (value) => _imageUrl = value!,
               ),
               SwitchListTile(
                 title: const Text('In Stock'),
