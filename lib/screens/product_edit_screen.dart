@@ -18,7 +18,11 @@ class ProductEditScreenState extends State<ProductEditScreen> {
   late double _marketPrice;
   late double _ourPrice;
   late int _stock;
-  late bool _isOutOfStock;
+  late bool _inStock;
+  late String _unit;
+  late String _category;
+  late String _tags;
+  late String _imageUrl;
 
   @override
   void initState() {
@@ -27,7 +31,11 @@ class ProductEditScreenState extends State<ProductEditScreen> {
     _marketPrice = widget.product?.marketPrice ?? 0.0;
     _ourPrice = widget.product?.ourPrice ?? 0.0;
     _stock = widget.product?.stock ?? 0;
-    _isOutOfStock = widget.product?.isOutOfStock ?? false;
+    _inStock = widget.product?.inStock ?? true;
+    _unit = widget.product?.unit ?? 'kg';
+    _category = widget.product?.category ?? 'vegetable';
+    _tags = widget.product?.tags.join(', ') ?? 'fresh';
+    _imageUrl = widget.product?.imageUrl ?? '';
   }
 
   void _saveForm() {
@@ -45,7 +53,13 @@ class ProductEditScreenState extends State<ProductEditScreen> {
             marketPrice: _marketPrice,
             ourPrice: _ourPrice,
             stock: _stock,
-            isOutOfStock: _isOutOfStock,
+            inStock: _inStock,
+            unit: _unit,
+            category: _category,
+            tags: _tags.split(',').map((s) => s.trim()).toList(),
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            imageUrl: _imageUrl,
           ),
         );
       } else {
@@ -57,7 +71,13 @@ class ProductEditScreenState extends State<ProductEditScreen> {
             marketPrice: _marketPrice,
             ourPrice: _ourPrice,
             stock: _stock,
-            isOutOfStock: _isOutOfStock,
+            inStock: _inStock,
+            unit: _unit,
+            category: _category,
+            tags: _tags.split(',').map((s) => s.trim()).toList(),
+            createdAt: widget.product!.createdAt,
+            updatedAt: DateTime.now(),
+            imageUrl: _imageUrl,
           ),
         );
       }
@@ -114,12 +134,40 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                 value!.isEmpty ? 'Please enter the stock' : null,
                 onSaved: (value) => _stock = int.parse(value!),
               ),
+              TextFormField(
+                initialValue: _unit,
+                decoration: const InputDecoration(labelText: 'Unit (e.g., kg, piece)'),
+                validator: (value) =>
+                value!.isEmpty ? 'Please enter a unit' : null,
+                onSaved: (value) => _unit = value!,
+              ),
+              TextFormField(
+                initialValue: _category,
+                decoration: const InputDecoration(labelText: 'Category'),
+                validator: (value) =>
+                value!.isEmpty ? 'Please enter a category' : null,
+                onSaved: (value) => _category = value!,
+              ),
+              TextFormField(
+                initialValue: _tags,
+                decoration: const InputDecoration(labelText: 'Tags (comma-separated)'),
+                validator: (value) =>
+                value!.isEmpty ? 'Please enter at least one tag' : null,
+                onSaved: (value) => _tags = value!,
+              ),
+              TextFormField(
+                initialValue: _imageUrl,
+                decoration: const InputDecoration(labelText: 'Image URL'),
+                validator: (value) =>
+                value!.isEmpty ? 'Please enter an image URL' : null,
+                onSaved: (value) => _imageUrl = value!,
+              ),
               SwitchListTile(
-                title: const Text('Out of Stock'),
-                value: _isOutOfStock,
+                title: const Text('In Stock'),
+                value: _inStock,
                 onChanged: (value) {
                   setState(() {
-                    _isOutOfStock = value;
+                    _inStock = value;
                   });
                 },
               ),

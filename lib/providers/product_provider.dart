@@ -18,7 +18,7 @@ class ProductProvider with ChangeNotifier {
       notifyListeners();
     } catch (error) {
       print(error);
-      throw error;
+      rethrow;
     }
   }
 
@@ -31,13 +31,19 @@ class ProductProvider with ChangeNotifier {
         marketPrice: product.marketPrice,
         ourPrice: product.ourPrice,
         stock: product.stock,
-        isOutOfStock: product.isOutOfStock,
+        inStock: product.inStock,
+        unit: product.unit,
+        category: product.category,
+        isFeatured: product.isFeatured,
+        tags: product.tags,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
       );
       _products.add(newProduct);
       notifyListeners();
     } catch (error) {
       print(error);
-      throw error;
+      rethrow;
     }
   }
 
@@ -53,7 +59,7 @@ class ProductProvider with ChangeNotifier {
         notifyListeners();
       } catch (error) {
         print(error);
-        throw error;
+        rethrow;
       }
     }
   }
@@ -70,7 +76,7 @@ class ProductProvider with ChangeNotifier {
       _products.insert(existingProductIndex, existingProduct);
       notifyListeners();
       print(error);
-      throw error;
+      rethrow;
     }
   }
 }
