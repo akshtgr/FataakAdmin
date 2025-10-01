@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/order_provider.dart';
 
-class OrderListScreen extends StatefulWidget {
-  const OrderListScreen({super.key});
+class ConfirmedOrdersScreen extends StatefulWidget {
+  const ConfirmedOrdersScreen({super.key});
 
   @override
-  OrderListScreenState createState() => OrderListScreenState();
+  State<ConfirmedOrdersScreen> createState() => _ConfirmedOrdersScreenState();
 }
 
-class OrderListScreenState extends State<OrderListScreen> {
+class _ConfirmedOrdersScreenState extends State<ConfirmedOrdersScreen> {
   @override
   void initState() {
     super.initState();
-    Provider.of<OrderProvider>(context, listen: false).fetchPendingOrders();
+    Provider.of<OrderProvider>(context, listen: false).fetchConfirmedOrders();
   }
 
   @override
@@ -21,13 +21,13 @@ class OrderListScreenState extends State<OrderListScreen> {
     final orderProvider = Provider.of<OrderProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pending Orders')),
+      appBar: AppBar(title: const Text('Confirmed Orders')),
       body: RefreshIndicator(
-        onRefresh: () => orderProvider.fetchPendingOrders(),
+        onRefresh: () => orderProvider.fetchConfirmedOrders(),
         child: ListView.builder(
-          itemCount: orderProvider.pendingOrders.length,
+          itemCount: orderProvider.confirmedOrders.length,
           itemBuilder: (ctx, i) {
-            final order = orderProvider.pendingOrders[i];
+            final order = orderProvider.confirmedOrders[i];
             return Card(
               margin: const EdgeInsets.all(8.0),
               child: Padding(
@@ -48,15 +48,9 @@ class OrderListScreenState extends State<OrderListScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          child: const Text('Not Ordered'),
+                          child: const Text('Mark as Pending'),
                           onPressed: () {
-                            orderProvider.notOrdered(order.id);
-                          },
-                        ),
-                        ElevatedButton(
-                          child: const Text('Confirm'),
-                          onPressed: () {
-                            orderProvider.confirmOrder(order);
+                            orderProvider.markAsPending(order);
                           },
                         ),
                       ],

@@ -1,4 +1,3 @@
-// lib/screens/product_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
@@ -20,7 +19,6 @@ class ProductListScreenState extends State<ProductListScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch products when the screen is initialized
     _refreshProducts(context);
   }
 
@@ -66,8 +64,7 @@ class ProductListScreenState extends State<ProductListScreen> {
             final product = productProvider.products[i];
             return ListTile(
               leading: CircleAvatar(
-                // Use a placeholder if the image URL is null or empty
-                backgroundImage: (product.imageUrl != null && product.imageUrl.isNotEmpty)
+                backgroundImage: (product.imageUrl.isNotEmpty)
                     ? NetworkImage(product.imageUrl)
                     : const AssetImage('assets/placeholder.png') as ImageProvider,
               ),
