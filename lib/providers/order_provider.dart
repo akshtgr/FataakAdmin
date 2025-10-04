@@ -80,15 +80,17 @@ class OrderProvider with ChangeNotifier {
       final productName = item['name'];
       final quantity = item['quantity'];
 
+      // --- CHANGE IS HERE ---
       final productSnapshot = await _firestore
-          .collection('products')
+          .collection('items')
           .where('name', isEqualTo: productName)
           .get();
 
       if (productSnapshot.docs.isNotEmpty) {
         final productDoc = productSnapshot.docs.first;
         final currentStock = productDoc['stock'];
-        await _firestore.collection('products').doc(productDoc.id).update({
+        // --- CHANGE IS HERE ---
+        await _firestore.collection('items').doc(productDoc.id).update({
           'stock': currentStock - quantity,
         });
       }
@@ -116,15 +118,17 @@ class OrderProvider with ChangeNotifier {
       final productName = item['name'];
       final quantity = item['quantity'];
 
+      // --- CHANGE IS HERE ---
       final productSnapshot = await _firestore
-          .collection('products')
+          .collection('items')
           .where('name', isEqualTo: productName)
           .get();
 
       if (productSnapshot.docs.isNotEmpty) {
         final productDoc = productSnapshot.docs.first;
         final currentStock = productDoc['stock'];
-        await _firestore.collection('products').doc(productDoc.id).update({
+        // --- CHANGE IS HERE ---
+        await _firestore.collection('items').doc(productDoc.id).update({
           'stock': currentStock + quantity,
         });
       }
