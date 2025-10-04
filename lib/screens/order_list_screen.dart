@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/order_provider.dart';
+import 'order_search.dart';
 
 class OrderListScreen extends StatefulWidget {
   const OrderListScreen({super.key});
@@ -21,10 +22,25 @@ class OrderListScreenState extends State<OrderListScreen> {
     final orderProvider = Provider.of<OrderProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pending Orders')),
+      appBar: AppBar(
+        title: const Text('Pending Orders'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: OrderSearchDelegate(orderProvider.pendingOrders),
+              );
+            },
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => orderProvider.fetchPendingOrders(),
-        child: ListView.builder(
+        child: orderProvider.pendingOrders.isEmpty
+            ? const Center(child: Text('No pending orders.'))
+            : ListView.builder(
           itemCount: orderProvider.pendingOrders.length,
           itemBuilder: (ctx, i) {
             final order = orderProvider.pendingOrders[i];
@@ -36,7 +52,8 @@ class OrderListScreenState extends State<OrderListScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Customer: ${order.customerName}',
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                        style:
+                        const TextStyle(fontWeight: FontWeight.bold)),
                     Text('Phone: ${order.phone}'),
                     Text('Address: ${order.address}'),
                     Text('Total: \$${order.totalPrice}'),
@@ -50,7 +67,7 @@ class OrderListScreenState extends State<OrderListScreen> {
                         TextButton(
                           child: const Text('Not Ordered'),
                           onPressed: () {
-                            orderProvider.notOrdered(order.id);
+                            orderProvider.markAsNotOrdered(order.id);
                           },
                         ),
                         ElevatedButton(

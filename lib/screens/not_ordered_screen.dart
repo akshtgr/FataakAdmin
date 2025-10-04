@@ -1,20 +1,20 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // Corrected import
 import 'package:provider/provider.dart';
 import '../providers/order_provider.dart';
 import 'order_search.dart';
 
-class ConfirmedOrdersScreen extends StatefulWidget {
-  const ConfirmedOrdersScreen({super.key});
+class NotOrderedScreen extends StatefulWidget {
+  const NotOrderedScreen({super.key});
 
   @override
-  State<ConfirmedOrdersScreen> createState() => _ConfirmedOrdersScreenState();
+  State<NotOrderedScreen> createState() => _NotOrderedScreenState();
 }
 
-class _ConfirmedOrdersScreenState extends State<ConfirmedOrdersScreen> {
+class _NotOrderedScreenState extends State<NotOrderedScreen> {
   @override
   void initState() {
     super.initState();
-    Provider.of<OrderProvider>(context, listen: false).fetchConfirmedOrders();
+    Provider.of<OrderProvider>(context, listen: false).fetchNotOrdered();
   }
 
   @override
@@ -23,27 +23,27 @@ class _ConfirmedOrdersScreenState extends State<ConfirmedOrdersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Confirmed Orders'),
+        title: const Text('Not Ordered'),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
               showSearch(
                 context: context,
-                delegate: OrderSearchDelegate(orderProvider.confirmedOrders),
+                delegate: OrderSearchDelegate(orderProvider.notOrdered),
               );
             },
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => orderProvider.fetchConfirmedOrders(),
-        child: orderProvider.confirmedOrders.isEmpty
-            ? const Center(child: Text('No confirmed orders.'))
+        onRefresh: () => orderProvider.fetchNotOrdered(),
+        child: orderProvider.notOrdered.isEmpty
+            ? const Center(child: Text('No "not ordered" items.'))
             : ListView.builder(
-          itemCount: orderProvider.confirmedOrders.length,
+          itemCount: orderProvider.notOrdered.length,
           itemBuilder: (ctx, i) {
-            final order = orderProvider.confirmedOrders[i];
+            final order = orderProvider.notOrdered[i];
             return Card(
               margin: const EdgeInsets.all(8.0),
               child: Padding(
@@ -65,9 +65,9 @@ class _ConfirmedOrdersScreenState extends State<ConfirmedOrdersScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          child: const Text('Mark as Pending'),
+                          child: const Text('Delete Order'),
                           onPressed: () {
-                            orderProvider.markAsPending(order);
+                            orderProvider.deleteOrder(order.id);
                           },
                         ),
                       ],
