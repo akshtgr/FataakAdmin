@@ -44,7 +44,7 @@ class OrderProvider with ChangeNotifier {
         );
       }
     } catch (error) {
-      debugPrint("Error fetching pending orders: $error"); // ADDED FOR DEBUGGING
+      debugPrint("Error fetching pending orders: $error");
     }
     notifyListeners();
   }
@@ -80,7 +80,7 @@ class OrderProvider with ChangeNotifier {
         );
       }
     } catch (error) {
-      debugPrint("Error fetching confirmed orders: $error"); // ADDED FOR DEBUGGING
+      debugPrint("Error fetching confirmed orders: $error");
     }
     notifyListeners();
   }
@@ -116,7 +116,7 @@ class OrderProvider with ChangeNotifier {
         );
       }
     } catch (error) {
-      debugPrint("Error fetching not ordered items: $error"); // ADDED FOR DEBUGGING
+      debugPrint("Error fetching not ordered items: $error");
     }
     notifyListeners();
   }
@@ -126,23 +126,25 @@ class OrderProvider with ChangeNotifier {
       'status': 'confirmed',
     });
 
+    // NOTE: Stock deduction logic paused because the new product structure
+    // uses 'variants' and boolean 'in_stock' instead of a simple integer 'stock'.
+    // You need to decide how to map order items to specific variants to deduct quantity.
+    /*
     for (var item in order.items) {
       final productName = item['name'];
       final quantity = item['quantity'];
 
       final productSnapshot = await _firestore
-          .collection('items')
-          .where('name', isEqualTo: productName)
+          .collection('fataak_products')
+          .where('english_name', isEqualTo: productName)
           .get();
 
       if (productSnapshot.docs.isNotEmpty) {
         final productDoc = productSnapshot.docs.first;
-        final currentStock = productDoc['stock'];
-        await _firestore.collection('items').doc(productDoc.id).update({
-          'stock': currentStock - quantity,
-        });
+        // Logic to update variant quantity needed here
       }
     }
+    */
 
     _pendingOrders.removeWhere((o) => o.id == order.id);
     _confirmedOrders.add(order);
@@ -168,23 +170,22 @@ class OrderProvider with ChangeNotifier {
       'status': 'pending',
     });
 
+    // NOTE: Stock return logic paused (see confirmOrder note).
+    /*
     for (var item in order.items) {
       final productName = item['name'];
       final quantity = item['quantity'];
 
       final productSnapshot = await _firestore
-          .collection('items')
-          .where('name', isEqualTo: productName)
+          .collection('fataak_products')
+          .where('english_name', isEqualTo: productName)
           .get();
 
       if (productSnapshot.docs.isNotEmpty) {
-        final productDoc = productSnapshot.docs.first;
-        final currentStock = productDoc['stock'];
-        await _firestore.collection('items').doc(productDoc.id).update({
-          'stock': currentStock + quantity,
-        });
+         // Logic to return variant quantity needed here
       }
     }
+    */
 
     _confirmedOrders.removeWhere((o) => o.id == order.id);
     _pendingOrders.add(order);

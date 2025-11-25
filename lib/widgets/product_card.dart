@@ -9,11 +9,13 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final defaultVar = product.defaultVariant;
+
     return Card(
       elevation: 0.0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0),
-        side: BorderSide(color: Colors.white, width: 1),
+        side: const BorderSide(color: Colors.white, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -44,11 +46,11 @@ class ProductCard extends StatelessWidget {
                 SizedBox(
                   height: 40,
                   child: Text(
-                    product.name,
+                    "${product.emoji} ${product.englishName}",
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15.0,
-                      height: 1.2, // ADJUSTED LINE SPACING HERE
+                      height: 1.2,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -56,17 +58,18 @@ class ProductCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4.0),
                 Text(
-                  'Stock: ${product.stock} ${product.stockUnit}',
-                  style: const TextStyle(
-                    color: Color(0xFF0A54EB),
+                  product.inStock ? 'In Stock' : 'Out of Stock',
+                  style: TextStyle(
+                    color: product.inStock ? const Color(0xFF0A54EB) : Colors.red,
                     fontSize: 12.0,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 4.0),
                 Row(
                   children: [
                     Text(
-                      '₹${product.ourPrice.toStringAsFixed(0)}',
+                      '₹${defaultVar.ourPrice.toStringAsFixed(0)}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14.0,
@@ -74,14 +77,15 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8.0),
-                    Text(
-                      '₹${product.marketPrice.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        color: Colors.red,
-                        decoration: TextDecoration.lineThrough,
-                        fontSize: 14.0,
+                    if (defaultVar.marketPrice > defaultVar.ourPrice)
+                      Text(
+                        '₹${defaultVar.marketPrice.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Colors.red,
+                          decoration: TextDecoration.lineThrough,
+                          fontSize: 14.0,
+                        ),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 8.0),

@@ -42,11 +42,14 @@ class ProductSearchDelegate extends SearchDelegate<Product?> {
   }
 
   Widget _buildSearchResults(BuildContext context) {
+    final lowerQuery = query.toLowerCase();
     final filteredProducts = query.isEmpty
         ? products
         : products
         .where((product) =>
-        product.name.toLowerCase().contains(query.toLowerCase()))
+    product.englishName.toLowerCase().contains(lowerQuery) ||
+        product.hinglishName.toLowerCase().contains(lowerQuery) ||
+        product.searchKeywords.any((k) => k.toLowerCase().contains(lowerQuery)))
         .toList();
 
     return ListView.builder(
@@ -59,9 +62,9 @@ class ProductSearchDelegate extends SearchDelegate<Product?> {
                 ? NetworkImage(product.imageUrl)
                 : const AssetImage('assets/placeholder.png') as ImageProvider,
           ),
-          title: Text(product.name),
-          subtitle:
-          Text('Our Price: ${product.ourPrice} | Stock: ${product.stock}'),
+          title: Text("${product.emoji} ${product.englishName}"),
+          subtitle: Text(
+              '₹${product.defaultVariant.ourPrice} | ${product.inStock ? "In Stock" : "Out"}'),
           trailing: IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {

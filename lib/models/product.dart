@@ -1,41 +1,112 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+class ProductVariant {
+  String variantId;
+  String label;
+  int quantity;
+  String quantityUnit;
+  double marketPrice;
+  double ourPrice;
+  int discountPercent;
+  bool isDefault;
+  String pricingRule;
+
+  ProductVariant({
+    required this.variantId,
+    required this.label,
+    required this.quantity,
+    required this.quantityUnit,
+    required this.marketPrice,
+    required this.ourPrice,
+    this.discountPercent = 0,
+    this.isDefault = false,
+    this.pricingRule = 'manual',
+  });
+
+  factory ProductVariant.fromJson(Map<String, dynamic> json) {
+    return ProductVariant(
+      variantId: json['variant_id'] ?? '',
+      label: json['label'] ?? '',
+      quantity: (json['quantity'] ?? 0).toInt(),
+      quantityUnit: json['quantity_unit'] ?? '',
+      marketPrice: (json['market_price'] ?? 0).toDouble(),
+      ourPrice: (json['our_price'] ?? 0).toDouble(),
+      discountPercent: (json['discount_percent'] ?? 0).toInt(),
+      isDefault: json['is_default'] ?? false,
+      pricingRule: json['pricing_rule'] ?? 'manual',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'variant_id': variantId,
+      'label': label,
+      'quantity': quantity,
+      'quantity_unit': quantityUnit,
+      'market_price': marketPrice,
+      'our_price': ourPrice,
+      'discount_percent': discountPercent,
+      'is_default': isDefault,
+      'pricing_rule': pricingRule,
+    };
+  }
+}
+
 class Product {
-  final String id;
-  final String name;
-  final String imageUrl;
-  final double marketPrice;
-  final double ourPrice;
-  final String priceUnit; // ADDED
-  final String unit;
-  int stock;
-  final String stockUnit; // ADDED
-  final String stockLabel; // ADDED
+  String id;
+  String englishName;
+  String hinglishName;
+  String category;
+  String imageUrl;
   bool inStock;
-  final String category;
-  final bool isFeatured;
-  final List<String> tags;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  bool isActive;
+  String baseUnit;
+  int minOrderQty;
+  String minOrderUnit;
+  List<ProductVariant> variants;
+  List<String> healthBenefits;
+  String description;
+  List<String> tags;
+  List<String> searchKeywords;
+  List<String> suitableFor; // NEW
+  String emoji; // NEW
+  DateTime timestampAdded;
 
   Product({
     required this.id,
-    required this.name,
-    required this.imageUrl,
-    required this.marketPrice,
-    required this.ourPrice,
-    required this.priceUnit, // ADDED
-    required this.unit,
-    required this.stock,
-    required this.stockUnit, // ADDED
-    required this.stockLabel, // ADDED
-    this.inStock = true,
+    required this.englishName,
+    required this.hinglishName,
     required this.category,
-    this.isFeatured = false,
+    required this.imageUrl,
+    required this.inStock,
+    required this.isActive,
+    required this.baseUnit,
+    required this.minOrderQty,
+    required this.minOrderUnit,
+    required this.variants,
+    required this.healthBenefits,
+    required this.description,
     required this.tags,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.searchKeywords,
+    required this.suitableFor,
+    required this.emoji,
+    required this.timestampAdded,
   });
+
+  // Helper to get the default variant for display
+  ProductVariant get defaultVariant {
+    if (variants.isEmpty) {
+      return ProductVariant(
+        variantId: 'dummy',
+        label: 'N/A',
+        quantity: 0,
+        quantityUnit: '',
+        marketPrice: 0,
+        ourPrice: 0,
+      );
+    }
+    return variants.firstWhere((v) => v.isDefault, orElse: () => variants.first);
+  }
 
   factory Product.fromJson(Map<String, dynamic> json, String id) {
     DateTime parseDate(dynamic dateValue) {
@@ -46,41 +117,47 @@ class Product {
 
     return Product(
       id: id,
-      name: json['name'] ?? 'No Name',
+      englishName: json['english_name'] ?? '',
+      hinglishName: json['hinglish_name'] ?? '',
+      category: json['category'] ?? '',
       imageUrl: json['image_url'] ?? '',
-      marketPrice: (json['market_price'] ?? 0).toDouble(),
-      ourPrice: (json['our_price'] ?? 0).toDouble(),
-      priceUnit: json['price_unit'] ?? 'per kg', // ADDED
-      unit: json['unit'] ?? 'kg',
-      stock: json['stock'] ?? 0,
-      stockUnit: json['stock_unit'] ?? 'kg', // ADDED
-      stockLabel: json['stock_label'] ?? 'left', // ADDED
-      inStock: json['in_stock'] ?? false,
-      category: json['category'] ?? 'Uncategorized',
-      isFeatured: json['is_featured'] ?? false,
+      inStock: json['in_stock'] ?? true,
+      isActive: json['is_active'] ?? true,
+      baseUnit: json['base_unit'] ?? 'g',
+      minOrderQty: (json['min_order_qty'] ?? 0).toInt(),
+      minOrderUnit: json['min_order_unit'] ?? 'g',
+      variants: (json['variants'] as List<dynamic>?)
+          ?.map((v) => ProductVariant.fromJson(v))
+          .toList() ?? [],
+      healthBenefits: List<String>.from(json['health_benefits'] ?? []),
+      description: json['description'] ?? '',
       tags: List<String>.from(json['tags'] ?? []),
-      createdAt: parseDate(json['created_at']),
-      updatedAt: parseDate(json['updated_at']),
+      searchKeywords: List<String>.from(json['search_keywords'] ?? []),
+      suitableFor: List<String>.from(json['suitable_for'] ?? []),
+      emoji: json['emoji'] ?? '',
+      timestampAdded: parseDate(json['timestamp_added']),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
-      'image_url': imageUrl,
-      'market_price': marketPrice,
-      'our_price': ourPrice,
-      'price_unit': priceUnit, // ADDED
-      'unit': unit,
-      'stock': stock,
-      'stock_unit': stockUnit, // ADDED
-      'stock_label': stockLabel, // ADDED
-      'in_stock': inStock,
+      'english_name': englishName,
+      'hinglish_name': hinglishName,
       'category': category,
-      'is_featured': isFeatured,
+      'image_url': imageUrl,
+      'in_stock': inStock,
+      'is_active': isActive,
+      'base_unit': baseUnit,
+      'min_order_qty': minOrderQty,
+      'min_order_unit': minOrderUnit,
+      'variants': variants.map((v) => v.toJson()).toList(),
+      'health_benefits': healthBenefits,
+      'description': description,
       'tags': tags,
-      'created_at': Timestamp.fromDate(createdAt),
-      'updated_at': Timestamp.fromDate(updatedAt),
+      'search_keywords': searchKeywords,
+      'suitable_for': suitableFor,
+      'emoji': emoji,
+      'timestamp_added': timestampAdded.toIso8601String(),
     };
   }
 }
