@@ -15,6 +15,11 @@ class ProductEditScreen extends StatefulWidget {
 class ProductEditScreenState extends State<ProductEditScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  // Colors
+  static const Color cBackground = Color(0xFF0F2A1D); // App Bar / Background Color
+  static const Color cCard = Color(0xFF375534);       // Card / Field Fill Color
+  static const Color cTextTint = Color(0xFFE3EED4);   // Text Color
+
   // Controllers
   final _englishNameController = TextEditingController();
   final _hinglishNameController = TextEditingController();
@@ -38,6 +43,10 @@ class ProductEditScreenState extends State<ProductEditScreen> {
   @override
   void initState() {
     super.initState();
+    _imageUrlController.addListener(() {
+      setState(() {});
+    });
+
     if (widget.product != null) {
       _englishNameController.text = widget.product!.englishName;
       _hinglishNameController.text = widget.product!.hinglishName;
@@ -55,6 +64,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
       _inStock = widget.product!.inStock;
       _isActive = widget.product!.isActive;
 
+      // Deep copy variants to ensure editing doesn't affect the original object immediately
       _variants = widget.product!.variants.map((v) => ProductVariant(
           variantId: v.variantId,
           label: v.label,
@@ -90,6 +100,32 @@ class ProductEditScreenState extends State<ProductEditScreen> {
     _emojiController.dispose();
     _suitableForController.dispose();
     super.dispose();
+  }
+
+  InputDecoration _buildInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: cTextTint, fontSize: 13),
+      filled: true,
+      fillColor: cCard,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        borderSide: const BorderSide(color: cBackground, width: 2.0),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        borderSide: const BorderSide(color: Colors.white, width: 2.0),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 2.0),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 2.0),
+      ),
+    );
   }
 
   void _saveForm() {
@@ -134,77 +170,93 @@ class ProductEditScreenState extends State<ProductEditScreen> {
     }
   }
 
-  Widget _buildVariantEditor(int index) {
+  Widget _buildSectionCard({required String title, required List<Widget> children}) {
+    return Card(
+      color: cCard,
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(color: cBackground, width: 2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 12),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVariantCard(int index) {
     final variant = _variants[index];
     return Card(
-      color: const Color(0xFF375534),
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      color: cCard,
+      margin: EdgeInsets.zero,
       elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(color: cBackground, width: 2),
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    initialValue: variant.label,
-                    decoration: const InputDecoration(labelText: 'Label'),
-                    style: const TextStyle(color: Colors.black),
-                    onChanged: (val) => variant.label = val,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
-                    initialValue: variant.quantity.toString(),
-                    decoration: const InputDecoration(labelText: 'Qty'),
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.black),
-                    onChanged: (val) => variant.quantity = int.tryParse(val) ?? 0,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
-                    initialValue: variant.quantityUnit,
-                    decoration: const InputDecoration(labelText: 'Unit'),
-                    style: const TextStyle(color: Colors.black),
-                    onChanged: (val) => variant.quantityUnit = val,
-                  ),
-                ),
-              ],
+            TextFormField(
+              initialValue: variant.label,
+              decoration: _buildInputDecoration('Label'),
+              style: const TextStyle(color: cTextTint),
+              cursorColor: cBackground,
+              onChanged: (val) => variant.label = val,
             ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    initialValue: variant.marketPrice.toString(),
-                    decoration: const InputDecoration(labelText: 'Market Price'),
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.black),
-                    onChanged: (val) => variant.marketPrice = double.tryParse(val) ?? 0,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
-                    initialValue: variant.ourPrice.toString(),
-                    decoration: const InputDecoration(labelText: 'Our Price'),
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.black),
-                    onChanged: (val) => variant.ourPrice = double.tryParse(val) ?? 0,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 8),
+            TextFormField(
+              initialValue: variant.quantity.toString(),
+              decoration: _buildInputDecoration('Qty'),
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: cTextTint),
+              cursorColor: cBackground,
+              onChanged: (val) => variant.quantity = int.tryParse(val) ?? 0,
             ),
+            const SizedBox(height: 8),
+            TextFormField(
+              initialValue: variant.quantityUnit,
+              decoration: _buildInputDecoration('Unit'),
+              style: const TextStyle(color: cTextTint),
+              cursorColor: cBackground,
+              onChanged: (val) => variant.quantityUnit = val,
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              initialValue: variant.marketPrice.toString(),
+              decoration: _buildInputDecoration('Market Price'),
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: cTextTint),
+              cursorColor: cBackground,
+              onChanged: (val) => variant.marketPrice = double.tryParse(val) ?? 0,
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              initialValue: variant.ourPrice.toString(),
+              decoration: _buildInputDecoration('Our Price'),
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: cTextTint),
+              cursorColor: cBackground,
+              onChanged: (val) => variant.ourPrice = double.tryParse(val) ?? 0,
+            ),
+            const SizedBox(height: 8),
             CheckboxListTile(
-              title: const Text("Is Default", style: TextStyle(color: Colors.white)),
+              contentPadding: EdgeInsets.zero,
+              title: const Text("Is Default", style: TextStyle(color: Colors.white, fontSize: 13)),
               value: variant.isDefault,
-              checkColor: Colors.black,
-              activeColor: Colors.white,
-              side: const BorderSide(color: Colors.white),
+              checkColor: cBackground,
+              activeColor: cTextTint,
+              side: const BorderSide(color: cTextTint),
               onChanged: (val) {
                 setState(() {
                   for (var v in _variants) {
@@ -214,13 +266,13 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                 });
               },
             ),
-            TextButton(
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
               onPressed: () {
                 setState(() {
                   _variants.removeAt(index);
                 });
               },
-              child: const Text("Remove Variant", style: TextStyle(color: Colors.redAccent)),
             )
           ],
         ),
@@ -231,154 +283,121 @@ class ProductEditScreenState extends State<ProductEditScreen> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        // App Bar Removed
-        body: Column(
-          children: [
-            // Custom Header
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  Text(
-                    widget.product == null ? 'Add Product' : 'Edit Product',
-                    style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.save, color: Colors.white),
-                    onPressed: _saveForm,
-                  ),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+      child: GestureDetector(
+        // Requirement 2: Dismiss keyboard/cursor on tap outside
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+          backgroundColor: cBackground,
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Basic Information", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                      const SizedBox(height: 10),
+                      // Header (No Save Button)
                       Row(
                         children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _englishNameController,
-                              decoration: const InputDecoration(labelText: 'English Name'),
-                              style: const TextStyle(color: Colors.black),
-                              validator: (val) => val!.isEmpty ? 'Required' : null,
-                            ),
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back, color: Colors.white),
+                            onPressed: () => Navigator.of(context).pop(),
                           ),
-                          const SizedBox(width: 10),
-                          SizedBox(
-                            width: 80,
-                            child: TextFormField(
-                              controller: _emojiController,
-                              decoration: const InputDecoration(labelText: 'Emoji'),
-                              style: const TextStyle(color: Colors.black),
-                            ),
+                          Text(
+                            widget.product == null ? 'Add Product' : 'Edit Product',
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                           ),
                         ],
                       ),
                       const SizedBox(height: 10),
-                      TextFormField(
-                        controller: _hinglishNameController,
-                        decoration: const InputDecoration(labelText: 'Hinglish Name'),
-                        style: const TextStyle(color: Colors.black),
-                        validator: (val) => val!.isEmpty ? 'Required' : null,
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: _categoryController,
-                        decoration: const InputDecoration(labelText: 'Category'),
-                        style: const TextStyle(color: Colors.black),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: _imageUrlController,
-                        decoration: const InputDecoration(labelText: 'Image URL'),
-                        style: const TextStyle(color: Colors.black),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: _descriptionController,
-                        decoration: const InputDecoration(labelText: 'Description'),
-                        maxLines: 2,
-                        style: const TextStyle(color: Colors.black),
+
+                      // 1. Image Preview
+                      Center(
+                        child: Container(
+                          width: 150,
+                          height: 150,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: cCard,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cBackground, width: 2),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child: _imageUrlController.text.isNotEmpty
+                                ? Image.network(
+                              _imageUrlController.text,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Center(child: Icon(Icons.broken_image, color: cTextTint, size: 40));
+                              },
+                            )
+                                : const Center(child: Icon(Icons.image_outlined, color: cTextTint, size: 40)),
+                          ),
+                        ),
                       ),
 
-                      const SizedBox(height: 20),
-                      const Text("Status", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                      Row(
+                      // 2. Units & Minimums Card
+                      _buildSectionCard(
+                        title: "Units & Minimums",
                         children: [
-                          Expanded(
-                            child: SwitchListTile(
-                              title: const Text('In Stock', style: TextStyle(color: Colors.white)),
-                              value: _inStock,
-                              activeColor: Colors.white,
-                              activeTrackColor: const Color(0xFF6B9071),
-                              onChanged: (val) => setState(() => _inStock = val),
-                            ),
-                          ),
-                          Expanded(
-                            child: SwitchListTile(
-                              title: const Text('Is Active', style: TextStyle(color: Colors.white)),
-                              value: _isActive,
-                              activeColor: Colors.white,
-                              activeTrackColor: const Color(0xFF6B9071),
-                              onChanged: (val) => setState(() => _isActive = val),
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _baseUnitController,
+                                  decoration: _buildInputDecoration('Base Unit'),
+                                  style: const TextStyle(color: cTextTint),
+                                  cursorColor: cBackground,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _minOrderQtyController,
+                                  decoration: _buildInputDecoration('Min Qty'),
+                                  keyboardType: TextInputType.number,
+                                  style: const TextStyle(color: cTextTint),
+                                  cursorColor: cBackground,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _minOrderUnitController,
+                                  decoration: _buildInputDecoration('Min Unit'),
+                                  style: const TextStyle(color: cTextTint),
+                                  cursorColor: cBackground,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
 
-                      const SizedBox(height: 20),
-                      const Text("Units & Minimums", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _baseUnitController,
-                              decoration: const InputDecoration(labelText: 'Base Unit'),
-                              style: const TextStyle(color: Colors.black),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _minOrderQtyController,
-                              decoration: const InputDecoration(labelText: 'Min Qty'),
-                              keyboardType: TextInputType.number,
-                              style: const TextStyle(color: Colors.black),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _minOrderUnitController,
-                              decoration: const InputDecoration(labelText: 'Min Unit'),
-                              style: const TextStyle(color: Colors.black),
-                            ),
-                          ),
-                        ],
+                      // 3. Variant Cards (Side by Side)
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: 12.0),
+                          child: Text("Variants", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                        ),
                       ),
-
-                      const SizedBox(height: 20),
-                      const Text("Variants", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                      ...List.generate(_variants.length, (index) => _buildVariantEditor(index)),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: List.generate(_variants.length, (index) {
+                              return SizedBox(
+                                width: (constraints.maxWidth - 12) / 2, // Half width minus spacing
+                                child: _buildVariantCard(index),
+                              );
+                            }),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
                       ElevatedButton.icon(
                         onPressed: () {
                           setState(() {
@@ -392,43 +411,173 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                             ));
                           });
                         },
-                        icon: const Icon(Icons.add, color: Colors.white),
-                        label: const Text("Add Variant"),
+                        icon: const Icon(Icons.add, color: cBackground),
+                        label: const Text("Add Variant", style: TextStyle(color: cBackground, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: cTextTint,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 4. Basic Information Card
+                      _buildSectionCard(
+                        title: "Basic Information",
+                        children: [
+                          TextFormField(
+                            controller: _englishNameController,
+                            decoration: _buildInputDecoration('English Name'),
+                            style: const TextStyle(color: cTextTint),
+                            cursorColor: cBackground,
+                            maxLines: null, // Requirement 5
+                            keyboardType: TextInputType.multiline,
+                            validator: (val) => val!.isEmpty ? 'Required' : null,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _emojiController,
+                            decoration: _buildInputDecoration('Emoji'),
+                            style: const TextStyle(color: cTextTint),
+                            cursorColor: cBackground,
+                            maxLines: null,
+                            keyboardType: TextInputType.multiline,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _hinglishNameController,
+                            decoration: _buildInputDecoration('Hinglish Name'),
+                            style: const TextStyle(color: cTextTint),
+                            cursorColor: cBackground,
+                            maxLines: null,
+                            keyboardType: TextInputType.multiline,
+                            validator: (val) => val!.isEmpty ? 'Required' : null,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _categoryController,
+                            decoration: _buildInputDecoration('Category'),
+                            style: const TextStyle(color: cTextTint),
+                            cursorColor: cBackground,
+                            maxLines: null,
+                            keyboardType: TextInputType.multiline,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _imageUrlController,
+                            decoration: _buildInputDecoration('Image URL'),
+                            style: const TextStyle(color: cTextTint),
+                            cursorColor: cBackground,
+                            maxLines: null,
+                            keyboardType: TextInputType.multiline,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _descriptionController,
+                            decoration: _buildInputDecoration('Description'),
+                            style: const TextStyle(color: cTextTint),
+                            cursorColor: cBackground,
+                            maxLines: null, // Requirement 5: Expand vertically
+                            keyboardType: TextInputType.multiline,
+                          ),
+                        ],
                       ),
 
-                      const SizedBox(height: 20),
-                      const Text("Metadata", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: _suitableForController,
-                        decoration: const InputDecoration(labelText: 'Suitable For (comma separated)'),
-                        style: const TextStyle(color: Colors.black),
+                      // 5. Metadata Card
+                      _buildSectionCard(
+                        title: "Metadata",
+                        children: [
+                          TextFormField(
+                            controller: _suitableForController,
+                            decoration: _buildInputDecoration('Suitable For (comma separated)'),
+                            style: const TextStyle(color: cTextTint),
+                            cursorColor: cBackground,
+                            maxLines: null, // Requirement 5
+                            keyboardType: TextInputType.multiline,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _tagsController,
+                            decoration: _buildInputDecoration('Tags (comma separated)'),
+                            style: const TextStyle(color: cTextTint),
+                            cursorColor: cBackground,
+                            maxLines: null,
+                            keyboardType: TextInputType.multiline,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _searchKeywordsController,
+                            decoration: _buildInputDecoration('Search Keywords'),
+                            style: const TextStyle(color: cTextTint),
+                            cursorColor: cBackground,
+                            maxLines: null,
+                            keyboardType: TextInputType.multiline,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _healthBenefitsController,
+                            decoration: _buildInputDecoration('Health Benefits (one per line)'),
+                            style: const TextStyle(color: cTextTint),
+                            cursorColor: cBackground,
+                            maxLines: null, // Requirement 5
+                            keyboardType: TextInputType.multiline,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: _tagsController,
-                        decoration: const InputDecoration(labelText: 'Tags (comma separated)'),
-                        style: const TextStyle(color: Colors.black),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: _searchKeywordsController,
-                        decoration: const InputDecoration(labelText: 'Search Keywords'),
-                        style: const TextStyle(color: Colors.black),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: _healthBenefitsController,
-                        decoration: const InputDecoration(labelText: 'Health Benefits (one per line)'),
-                        maxLines: 4,
-                        style: const TextStyle(color: Colors.black),
+
+                      // 6. Status Card (At Bottom)
+                      _buildSectionCard(
+                        title: "Status",
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SwitchListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text('In Stock', style: TextStyle(color: Colors.white, fontSize: 13)),
+                                  value: _inStock,
+                                  activeColor: Colors.white,
+                                  activeTrackColor: const Color(0xFF6B9071),
+                                  onChanged: (val) => setState(() => _inStock = val),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: SwitchListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text('Is Active', style: TextStyle(color: Colors.white, fontSize: 13)),
+                                  value: _isActive,
+                                  activeColor: Colors.white,
+                                  activeTrackColor: const Color(0xFF6B9071),
+                                  onChanged: (val) => setState(() => _isActive = val),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ],
+
+              // Save Overlay Button (Centered, Compact, Lower Position)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10), // Requirement 3: Adjusted to 10 for "more below"
+                  child: FloatingActionButton.extended(
+                    onPressed: _saveForm,
+                    backgroundColor: cTextTint,
+                    label: const Text(
+                      "Save Product",
+                      style: TextStyle(color: cBackground, fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    icon: const Icon(Icons.save, color: cBackground),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

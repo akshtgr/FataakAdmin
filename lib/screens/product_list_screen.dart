@@ -281,10 +281,8 @@ class ProductListScreenState extends State<ProductListScreen> {
                       controller: _scrollController,
                       thumbVisibility: true,
                       interactive: true,
-                      // Thickness and color defined in Theme (main.dart)
                       child: ListView.builder(
                         controller: _scrollController,
-                        // Increased horizontal padding to 16 for spacing
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
                         itemCount: sortedProducts.length,
                         itemBuilder: (ctx, i) {
@@ -320,9 +318,6 @@ class ProductListScreenState extends State<ProductListScreen> {
                                   clipBehavior: Clip.none,
                                   alignment: Alignment.center,
                                   children: [
-                                    // Removed the "Track" Container to fix the "thick line" issue
-
-                                    // Bubble Thumb (Visible only when dragging)
                                     if (_isDragging)
                                       Positioned(
                                         top: _dragPosition - 30,
@@ -363,8 +358,8 @@ class ProductListScreenState extends State<ProductListScreen> {
               ),
             );
           },
-          backgroundColor: cCard,
-          child: const Icon(Icons.add, color: cTextTint),
+          backgroundColor: cTextTint,
+          child: const Icon(Icons.add, color: cBackground),
         ),
       ),
     );
@@ -450,6 +445,15 @@ class _ProductListItemState extends State<ProductListItem> {
   void _updateControllers() {
     _price300gController.text = _variant300g?.ourPrice.toStringAsFixed(0) ?? '';
     _price1kgController.text = _variant1kg?.ourPrice.toStringAsFixed(0) ?? '';
+  }
+
+  // --- Logic to Reset/Cancel Edits ---
+  void _cancelEdits() {
+    setState(() {
+      _updateControllers(); // Reset text to original values
+      _isEditing = false;
+    });
+    FocusScope.of(context).unfocus(); // Hide Cursor
   }
 
   @override
@@ -546,15 +550,13 @@ class _ProductListItemState extends State<ProductListItem> {
                 ? Text(widget.product.englishName, style: const TextStyle(fontSize: 12, color: cSubText))
                 : null,
             trailing: IconButton(
-              icon: Icon(
-                _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                color: cTextTint,
-              ),
+              icon: const Icon(Icons.edit, color: cTextTint),
               onPressed: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                  if (!_isExpanded) _isEditing = false;
-                });
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ProductEditScreen(product: widget.product),
+                  ),
+                );
               },
             ),
             onTap: () {
@@ -566,112 +568,117 @@ class _ProductListItemState extends State<ProductListItem> {
           ),
 
           if (_isExpanded)
-            Container(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 0),
-              child: Column(
-                children: [
-                  const Divider(color: Colors.white12, height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Column(
-                              children: [
-                                const Text("300g", style: TextStyle(fontSize: 11, color: cSubText)),
-                                const SizedBox(height: 2),
-                                _isEditing && has300g
-                                    ? SizedBox(
-                                  width: 60,
-                                  height: 30,
-                                  child: TextField(
-                                    controller: _price300gController,
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: cCard, fontSize: 13, fontWeight: FontWeight.bold),
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: cTextTint,
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+          // TapRegion detects clicks outside this container
+            TapRegion(
+              onTapOutside: (event) {
+                if (_isEditing) {
+                  _cancelEdits();
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 0),
+                child: Column(
+                  children: [
+                    const Divider(color: Colors.white12, height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
+                                children: [
+                                  const Text("300g", style: TextStyle(fontSize: 11, color: cSubText)),
+                                  const SizedBox(height: 2),
+                                  _isEditing && has300g
+                                      ? SizedBox(
+                                    width: 60,
+                                    height: 30,
+                                    child: TextField(
+                                      controller: _price300gController,
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(color: cCard, fontSize: 13, fontWeight: FontWeight.bold),
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: cTextTint,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                                      ),
                                     ),
+                                  )
+                                      : Text(
+                                    has300g ? "₹${v300.ourPrice.toStringAsFixed(0)}" : "-",
+                                    style: const TextStyle(fontWeight: FontWeight.bold, color: cTextTint),
                                   ),
-                                )
-                                    : Text(
-                                  has300g ? "₹${v300.ourPrice.toStringAsFixed(0)}" : "-",
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: cTextTint),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              children: [
-                                const Text("1kg", style: TextStyle(fontSize: 11, color: cSubText)),
-                                const SizedBox(height: 2),
-                                _isEditing && has1kg
-                                    ? SizedBox(
-                                  width: 60,
-                                  height: 30,
-                                  child: TextField(
-                                    controller: _price1kgController,
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: cCard, fontSize: 13, fontWeight: FontWeight.bold),
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: cTextTint,
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  const Text("1kg", style: TextStyle(fontSize: 11, color: cSubText)),
+                                  const SizedBox(height: 2),
+                                  _isEditing && has1kg
+                                      ? SizedBox(
+                                    width: 60,
+                                    height: 30,
+                                    child: TextField(
+                                      controller: _price1kgController,
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(color: cCard, fontSize: 13, fontWeight: FontWeight.bold),
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: cTextTint,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                                      ),
                                     ),
+                                  )
+                                      : Text(
+                                    has1kg ? "₹${v1kg.ourPrice.toStringAsFixed(0)}" : "-",
+                                    style: const TextStyle(fontWeight: FontWeight.bold, color: cTextTint),
                                   ),
-                                )
-                                    : Text(
-                                  has1kg ? "₹${v1kg.ourPrice.toStringAsFixed(0)}" : "-",
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: cTextTint),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          if (_isEditing)
-                            IconButton(
-                              icon: const Icon(Icons.check_circle),
-                              color: cTextTint,
-                              onPressed: _saveQuickEdits,
-                              tooltip: 'Save Price',
-                            )
-                          else
-                            IconButton(
-                              icon: const Icon(Icons.price_change_outlined),
-                              color: cSubText,
-                              onPressed: () {
-                                setState(() {
-                                  _updateControllers();
-                                  _isEditing = true;
-                                });
-                              },
-                              tooltip: 'Edit Price',
-                            ),
-                          IconButton(
-                            icon: const Icon(Icons.edit_note),
-                            color: cSubText,
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => ProductEditScreen(product: widget.product),
-                                ),
-                              );
-                            },
-                            tooltip: 'Full Edit',
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                      )
-                    ],
-                  ),
-                ],
+                        ),
+                        Row(
+                          children: [
+                            if (_isEditing) ...[
+                              // Cancel Button (Cross)
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                color: Colors.redAccent,
+                                onPressed: _cancelEdits,
+                                tooltip: 'Cancel',
+                              ),
+                              // Save Button (Check)
+                              IconButton(
+                                icon: const Icon(Icons.check_circle),
+                                color: cTextTint,
+                                onPressed: _saveQuickEdits,
+                                tooltip: 'Save Price',
+                              ),
+                            ] else
+                              IconButton(
+                                // Changed icon to Pencil (Icons.edit) as requested
+                                icon: const Icon(Icons.edit),
+                                color: cSubText,
+                                onPressed: () {
+                                  setState(() {
+                                    _updateControllers();
+                                    _isEditing = true;
+                                  });
+                                },
+                                tooltip: 'Quick Edit',
+                              ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
         ],

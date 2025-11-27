@@ -68,8 +68,11 @@ class _TabsScreenState extends State<TabsScreen> {
   Widget build(BuildContext context) {
     // #0F2A1D
     const navBarColor = Color(0xFF0F2A1D);
-    // #375534
-    const unselectedColor = Color(0xFF375534);
+
+    // Requirement 4: Make icons brighter.
+    // Changing from dark green (0xFF375534) to cAccent (0xFF6B9071) which is a medium-bright green
+    // to better match the visibility of the text color theme.
+    const unselectedColor = Color(0xFF6B9071);
 
     return Scaffold(
       body: _pages[_selectedPageIndex],
