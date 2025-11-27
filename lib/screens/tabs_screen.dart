@@ -30,12 +30,13 @@ class _TabsScreenState extends State<TabsScreen> {
       const NotOrderedScreen(),
     ];
 
-    // Fetch all data needed for badges right away
-    Provider.of<ProductProvider>(context, listen: false).fetchProducts();
-    final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-    orderProvider.fetchPendingOrders();
-    orderProvider.fetchConfirmedOrders();
-    orderProvider.fetchNotOrdered();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ProductProvider>(context, listen: false).fetchProducts();
+      final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+      orderProvider.fetchPendingOrders();
+      orderProvider.fetchConfirmedOrders();
+      orderProvider.fetchNotOrdered();
+    });
   }
 
   void _selectPage(int index) {
@@ -53,34 +54,42 @@ class _TabsScreenState extends State<TabsScreen> {
       badgeContent: Text(
         count.toString(),
         style: const TextStyle(
-            color: Colors.white, fontSize: 10), // Font size adjusted
+            color: Colors.white, fontSize: 10),
       ),
       badgeStyle: badges.BadgeStyle(
         badgeColor: backgroundColor,
       ),
-      showBadge: true,
+      showBadge: count > 0,
       child: child,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // #0F2A1D
+    const navBarColor = Color(0xFF0F2A1D);
+    // #375534
+    const unselectedColor = Color(0xFF375534);
+
     return Scaffold(
       body: _pages[_selectedPageIndex],
       bottomNavigationBar: BottomNavigationBar(
         onTap: _selectPage,
         currentIndex: _selectedPageIndex,
         type: BottomNavigationBarType.fixed,
-        iconSize: 22,
+        iconSize: 24,
+        backgroundColor: navBarColor,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: unselectedColor,
         items: [
           BottomNavigationBarItem(
             icon: Consumer<ProductProvider>(
               builder: (_, productData, ch) => _buildBadge(
                 count: productData.products.length,
-                backgroundColor: const Color(0xFFCF00A2), // COLOR CHANGED HERE
+                backgroundColor: Colors.purple,
                 child: ch!,
               ),
-              child: const Icon(Icons.list),
+              child: const Icon(Icons.list_alt),
             ),
             label: 'Items',
           ),
@@ -88,34 +97,34 @@ class _TabsScreenState extends State<TabsScreen> {
             icon: Consumer<OrderProvider>(
               builder: (_, orderData, ch) => _buildBadge(
                 count: orderData.pendingOrders.length,
-                backgroundColor: const Color(0xFF0A54EB),
+                backgroundColor: Colors.blue,
                 child: ch!,
               ),
               child: const Icon(Icons.pending_actions),
             ),
-            label: 'Pending Orders',
+            label: 'Pending',
           ),
           BottomNavigationBarItem(
             icon: Consumer<OrderProvider>(
               builder: (_, orderData, ch) => _buildBadge(
                 count: orderData.confirmedOrders.length,
-                backgroundColor: const Color(0xFF00B813),
+                backgroundColor: Colors.green,
                 child: ch!,
               ),
-              child: const Icon(Icons.check_circle),
+              child: const Icon(Icons.check_circle_outline),
             ),
-            label: 'Confirmed Orders',
+            label: 'Confirmed',
           ),
           BottomNavigationBarItem(
             icon: Consumer<OrderProvider>(
               builder: (_, orderData, ch) => _buildBadge(
                 count: orderData.notOrdered.length,
-                backgroundColor: const Color(0xFFFF1E00),
+                backgroundColor: Colors.red,
                 child: ch!,
               ),
-              child: const Icon(Icons.cancel),
+              child: const Icon(Icons.cancel_outlined),
             ),
-            label: 'Not Ordered',
+            label: 'Void',
           ),
         ],
       ),

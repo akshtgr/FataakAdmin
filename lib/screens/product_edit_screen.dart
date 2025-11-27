@@ -27,14 +27,12 @@ class ProductEditScreenState extends State<ProductEditScreen> {
   final _tagsController = TextEditingController();
   final _searchKeywordsController = TextEditingController();
   final _healthBenefitsController = TextEditingController();
-  final _emojiController = TextEditingController(); // NEW
-  final _suitableForController = TextEditingController(); // NEW
+  final _emojiController = TextEditingController();
+  final _suitableForController = TextEditingController();
 
-  // Booleans
   bool _inStock = true;
   bool _isActive = true;
 
-  // Variants list
   List<ProductVariant> _variants = [];
 
   @override
@@ -57,7 +55,6 @@ class ProductEditScreenState extends State<ProductEditScreen> {
       _inStock = widget.product!.inStock;
       _isActive = widget.product!.isActive;
 
-      // Deep copy variants
       _variants = widget.product!.variants.map((v) => ProductVariant(
           variantId: v.variantId,
           label: v.label,
@@ -70,7 +67,6 @@ class ProductEditScreenState extends State<ProductEditScreen> {
           pricingRule: v.pricingRule
       )).toList();
     } else {
-      // Default initial variants
       _variants = [
         ProductVariant(variantId: '', label: '300 g', quantity: 300, quantityUnit: 'g', marketPrice: 0, ourPrice: 0, isDefault: true),
         ProductVariant(variantId: '', label: '1 kg', quantity: 1000, quantityUnit: 'g', marketPrice: 0, ourPrice: 0, isDefault: false),
@@ -100,7 +96,6 @@ class ProductEditScreenState extends State<ProductEditScreen> {
     if (_formKey.currentState!.validate()) {
       final productProvider = Provider.of<ProductProvider>(context, listen: false);
 
-      // Helper to split comma separated string
       List<String> splitComma(String text) {
         return text.isEmpty
             ? []
@@ -142,8 +137,9 @@ class ProductEditScreenState extends State<ProductEditScreen> {
   Widget _buildVariantEditor(int index) {
     final variant = _variants[index];
     return Card(
+      color: const Color(0xFF375534),
       margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 2,
+      elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -154,6 +150,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                   child: TextFormField(
                     initialValue: variant.label,
                     decoration: const InputDecoration(labelText: 'Label'),
+                    style: const TextStyle(color: Colors.black),
                     onChanged: (val) => variant.label = val,
                   ),
                 ),
@@ -163,6 +160,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                     initialValue: variant.quantity.toString(),
                     decoration: const InputDecoration(labelText: 'Qty'),
                     keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.black),
                     onChanged: (val) => variant.quantity = int.tryParse(val) ?? 0,
                   ),
                 ),
@@ -171,11 +169,13 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                   child: TextFormField(
                     initialValue: variant.quantityUnit,
                     decoration: const InputDecoration(labelText: 'Unit'),
+                    style: const TextStyle(color: Colors.black),
                     onChanged: (val) => variant.quantityUnit = val,
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
@@ -183,6 +183,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                     initialValue: variant.marketPrice.toString(),
                     decoration: const InputDecoration(labelText: 'Market Price'),
                     keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.black),
                     onChanged: (val) => variant.marketPrice = double.tryParse(val) ?? 0,
                   ),
                 ),
@@ -192,14 +193,18 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                     initialValue: variant.ourPrice.toString(),
                     decoration: const InputDecoration(labelText: 'Our Price'),
                     keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.black),
                     onChanged: (val) => variant.ourPrice = double.tryParse(val) ?? 0,
                   ),
                 ),
               ],
             ),
             CheckboxListTile(
-              title: const Text("Is Default"),
+              title: const Text("Is Default", style: TextStyle(color: Colors.white)),
               value: variant.isDefault,
+              checkColor: Colors.black,
+              activeColor: Colors.white,
+              side: const BorderSide(color: Colors.white),
               onChanged: (val) {
                 setState(() {
                   for (var v in _variants) {
@@ -215,7 +220,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                   _variants.removeAt(index);
                 });
               },
-              child: const Text("Remove Variant", style: TextStyle(color: Colors.red)),
+              child: const Text("Remove Variant", style: TextStyle(color: Colors.redAccent)),
             )
           ],
         ),
@@ -225,152 +230,205 @@ class ProductEditScreenState extends State<ProductEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.product == null ? 'Add Product' : 'Edit Product'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveForm,
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Basic Information", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Row(
+    return SafeArea(
+      child: Scaffold(
+        // App Bar Removed
+        body: Column(
+          children: [
+            // Custom Header
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _englishNameController,
-                      decoration: const InputDecoration(labelText: 'English Name'),
-                      validator: (val) => val!.isEmpty ? 'Required' : null,
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  Text(
+                    widget.product == null ? 'Add Product' : 'Edit Product',
+                    style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    width: 60,
-                    child: TextFormField(
-                      controller: _emojiController,
-                      decoration: const InputDecoration(labelText: 'Emoji'),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.save, color: Colors.white),
+                    onPressed: _saveForm,
                   ),
                 ],
               ),
-              TextFormField(
-                controller: _hinglishNameController,
-                decoration: const InputDecoration(labelText: 'Hinglish Name'),
-                validator: (val) => val!.isEmpty ? 'Required' : null,
-              ),
-              TextFormField(
-                controller: _categoryController,
-                decoration: const InputDecoration(labelText: 'Category'),
-              ),
-              TextFormField(
-                controller: _imageUrlController,
-                decoration: const InputDecoration(labelText: 'Image URL'),
-              ),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 2,
-              ),
+            ),
 
-              const SizedBox(height: 20),
-              const Text("Status", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Row(
-                children: [
-                  Expanded(
-                    child: SwitchListTile(
-                      title: const Text('In Stock'),
-                      value: _inStock,
-                      onChanged: (val) => setState(() => _inStock = val),
-                    ),
-                  ),
-                  Expanded(
-                    child: SwitchListTile(
-                      title: const Text('Is Active'),
-                      value: _isActive,
-                      onChanged: (val) => setState(() => _isActive = val),
-                    ),
-                  ),
-                ],
-              ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Basic Information", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _englishNameController,
+                              decoration: const InputDecoration(labelText: 'English Name'),
+                              style: const TextStyle(color: Colors.black),
+                              validator: (val) => val!.isEmpty ? 'Required' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          SizedBox(
+                            width: 80,
+                            child: TextFormField(
+                              controller: _emojiController,
+                              decoration: const InputDecoration(labelText: 'Emoji'),
+                              style: const TextStyle(color: Colors.black),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _hinglishNameController,
+                        decoration: const InputDecoration(labelText: 'Hinglish Name'),
+                        style: const TextStyle(color: Colors.black),
+                        validator: (val) => val!.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _categoryController,
+                        decoration: const InputDecoration(labelText: 'Category'),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _imageUrlController,
+                        decoration: const InputDecoration(labelText: 'Image URL'),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _descriptionController,
+                        decoration: const InputDecoration(labelText: 'Description'),
+                        maxLines: 2,
+                        style: const TextStyle(color: Colors.black),
+                      ),
 
-              const SizedBox(height: 20),
-              const Text("Units & Minimums", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _baseUnitController,
-                      decoration: const InputDecoration(labelText: 'Base Unit (e.g. g)'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _minOrderQtyController,
-                      decoration: const InputDecoration(labelText: 'Min Order Qty'),
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _minOrderUnitController,
-                      decoration: const InputDecoration(labelText: 'Min Order Unit'),
-                    ),
-                  ),
-                ],
-              ),
+                      const SizedBox(height: 20),
+                      const Text("Status", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SwitchListTile(
+                              title: const Text('In Stock', style: TextStyle(color: Colors.white)),
+                              value: _inStock,
+                              activeColor: Colors.white,
+                              activeTrackColor: const Color(0xFF6B9071),
+                              onChanged: (val) => setState(() => _inStock = val),
+                            ),
+                          ),
+                          Expanded(
+                            child: SwitchListTile(
+                              title: const Text('Is Active', style: TextStyle(color: Colors.white)),
+                              value: _isActive,
+                              activeColor: Colors.white,
+                              activeTrackColor: const Color(0xFF6B9071),
+                              onChanged: (val) => setState(() => _isActive = val),
+                            ),
+                          ),
+                        ],
+                      ),
 
-              const SizedBox(height: 20),
-              const Text("Variants", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ...List.generate(_variants.length, (index) => _buildVariantEditor(index)),
-              ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _variants.add(ProductVariant(
-                        variantId: '${DateTime.now().millisecondsSinceEpoch}',
-                        label: 'New',
-                        quantity: 100,
-                        quantityUnit: 'g',
-                        marketPrice: 0,
-                        ourPrice: 0
-                    ));
-                  });
-                },
-                icon: const Icon(Icons.add),
-                label: const Text("Add Variant"),
-              ),
+                      const SizedBox(height: 20),
+                      const Text("Units & Minimums", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _baseUnitController,
+                              decoration: const InputDecoration(labelText: 'Base Unit'),
+                              style: const TextStyle(color: Colors.black),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _minOrderQtyController,
+                              decoration: const InputDecoration(labelText: 'Min Qty'),
+                              keyboardType: TextInputType.number,
+                              style: const TextStyle(color: Colors.black),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _minOrderUnitController,
+                              decoration: const InputDecoration(labelText: 'Min Unit'),
+                              style: const TextStyle(color: Colors.black),
+                            ),
+                          ),
+                        ],
+                      ),
 
-              const SizedBox(height: 20),
-              const Text("Metadata", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              TextFormField(
-                controller: _suitableForController,
-                decoration: const InputDecoration(labelText: 'Suitable For (comma separated)'),
+                      const SizedBox(height: 20),
+                      const Text("Variants", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      ...List.generate(_variants.length, (index) => _buildVariantEditor(index)),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _variants.add(ProductVariant(
+                                variantId: '${DateTime.now().millisecondsSinceEpoch}',
+                                label: 'New',
+                                quantity: 100,
+                                quantityUnit: 'g',
+                                marketPrice: 0,
+                                ourPrice: 0
+                            ));
+                          });
+                        },
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        label: const Text("Add Variant"),
+                      ),
+
+                      const SizedBox(height: 20),
+                      const Text("Metadata", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _suitableForController,
+                        decoration: const InputDecoration(labelText: 'Suitable For (comma separated)'),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _tagsController,
+                        decoration: const InputDecoration(labelText: 'Tags (comma separated)'),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _searchKeywordsController,
+                        decoration: const InputDecoration(labelText: 'Search Keywords'),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _healthBenefitsController,
+                        decoration: const InputDecoration(labelText: 'Health Benefits (one per line)'),
+                        maxLines: 4,
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              TextFormField(
-                controller: _tagsController,
-                decoration: const InputDecoration(labelText: 'Tags (comma separated)'),
-              ),
-              TextFormField(
-                controller: _searchKeywordsController,
-                decoration: const InputDecoration(labelText: 'Search Keywords'),
-              ),
-              TextFormField(
-                controller: _healthBenefitsController,
-                decoration: const InputDecoration(labelText: 'Health Benefits (one per line)'),
-                maxLines: 4,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
