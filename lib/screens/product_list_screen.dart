@@ -27,10 +27,6 @@ class ProductListScreenState extends State<ProductListScreen> {
   int _expandTriggerVersion = 0;
   bool _shouldExpandAll = false;
 
-  bool _isDragging = false;
-  double _dragPosition = 0.0;
-  String _currentLetter = "";
-
   // Theme Colors
   static const Color cBackground = Color(0xFF0F2A1D);
   static const Color cCard = Color(0xFF375534);
@@ -77,10 +73,12 @@ class ProductListScreenState extends State<ProductListScreen> {
         sortedList.sort((a, b) => _getPrice(a).compareTo(_getPrice(b)));
         break;
       case SortOption.aToZ:
-        sortedList.sort((a, b) => a.hinglishName.toLowerCase().compareTo(b.hinglishName.toLowerCase()));
+        sortedList
+            .sort((a, b) => a.hinglishName.toLowerCase().compareTo(b.hinglishName.toLowerCase()));
         break;
       case SortOption.zToA:
-        sortedList.sort((a, b) => b.hinglishName.toLowerCase().compareTo(a.hinglishName.toLowerCase()));
+        sortedList
+            .sort((a, b) => b.hinglishName.toLowerCase().compareTo(a.hinglishName.toLowerCase()));
         break;
       case SortOption.latest:
         sortedList.sort((a, b) => b.timestampAdded.compareTo(a.timestampAdded));
@@ -91,56 +89,29 @@ class ProductListScreenState extends State<ProductListScreen> {
 
   String _getSortButtonLabel() {
     switch (_currentSort) {
-      case SortOption.priceHighToLow: return 'Price: High to Low';
-      case SortOption.priceLowToHigh: return 'Price: Low to High';
-      case SortOption.aToZ: return 'A-Z';
-      case SortOption.zToA: return 'Z-A';
-      case SortOption.latest: return 'Latest Edited';
+      case SortOption.priceHighToLow:
+        return 'Price: High to Low';
+      case SortOption.priceLowToHigh:
+        return 'Price: Low to High';
+      case SortOption.aToZ:
+        return 'A-Z';
+      case SortOption.zToA:
+        return 'Z-A';
+      case SortOption.latest:
+        return 'Latest Edited';
     }
-  }
-
-  void _handleDrag(double localDy, double height, int itemCount, List<Product> sortedProducts) {
-    setState(() {
-      _isDragging = true;
-      _dragPosition = localDy.clamp(0.0, height);
-
-      double percentage = _dragPosition / height;
-
-      if (_scrollController.hasClients) {
-        double maxScroll = _scrollController.position.maxScrollExtent;
-        _scrollController.jumpTo(percentage * maxScroll);
-      }
-
-      int index = (percentage * (itemCount - 1)).round();
-      if (index >= 0 && index < itemCount) {
-        String name = sortedProducts[index].hinglishName;
-        if (name.isNotEmpty) {
-          _currentLetter = name[0].toUpperCase();
-        } else {
-          _currentLetter = "#";
-        }
-      }
-    });
-  }
-
-  void _onVerticalDragStart(DragStartDetails details, double height, int itemCount, List<Product> sortedProducts) {
-    _handleDrag(details.localPosition.dy, height, itemCount, sortedProducts);
-  }
-
-  void _onVerticalDragUpdate(DragUpdateDetails details, double height, int itemCount, List<Product> sortedProducts) {
-    _handleDrag(details.localPosition.dy, height, itemCount, sortedProducts);
-  }
-
-  void _onVerticalDragEnd(DragEndDetails details) {
-    setState(() {
-      _isDragging = false;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     final productProvider = Provider.of<ProductProvider>(context);
-    final sortedProducts = _getSortedProducts(productProvider.products);
+    final allSortedProducts = _getSortedProducts(productProvider.products);
+
+    // Requirement 3: Separate Active and Inactive/Out-of-Stock products
+    final activeProducts =
+    allSortedProducts.where((p) => p.isActive && p.inStock).toList();
+    final inactiveProducts =
+    allSortedProducts.where((p) => !p.isActive || !p.inStock).toList();
 
     return SafeArea(
       child: Scaffold(
@@ -158,15 +129,15 @@ class ProductListScreenState extends State<ProductListScreen> {
                     style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: cTextTint
-                    ),
+                        color: cTextTint),
                   ),
                   IconButton(
                     icon: const Icon(Icons.search, color: cTextTint),
                     onPressed: () {
                       showSearch(
                         context: context,
-                        delegate: ProductSearchDelegate(sortedProducts, productProvider),
+                        delegate:
+                        ProductSearchDelegate(allSortedProducts, productProvider),
                       );
                     },
                   ),
@@ -182,14 +153,16 @@ class ProductListScreenState extends State<ProductListScreen> {
                 children: [
                   // Sort Button
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: cCard,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: PopupMenuButton<SortOption>(
                       initialValue: _currentSort,
-                      offset: const Offset(0, 45), // Pushes menu down to avoid overlap
+                      offset: const Offset(
+                          0, 45), // Pushes menu down to avoid overlap
                       onSelected: (SortOption item) {
                         setState(() {
                           _currentSort = item;
@@ -204,13 +177,13 @@ class ProductListScreenState extends State<ProductListScreen> {
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: cTextTint,
-                                fontSize: 13
-                            ),
+                                fontSize: 13),
                           ),
                           const Icon(Icons.arrow_drop_down, color: cTextTint),
                         ],
                       ),
-                      itemBuilder: (BuildContext context) => <PopupMenuEntry<SortOption>>[
+                      itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<SortOption>>[
                         const PopupMenuItem<SortOption>(
                           value: SortOption.priceHighToLow,
                           child: Text('Price: High to Low'),
@@ -239,7 +212,8 @@ class ProductListScreenState extends State<ProductListScreen> {
                   InkWell(
                     onTap: _toggleExpandAll,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: cCard,
                         borderRadius: BorderRadius.circular(20),
@@ -256,7 +230,9 @@ class ProductListScreenState extends State<ProductListScreen> {
                           ),
                           const SizedBox(width: 4),
                           Icon(
-                            _shouldExpandAll ? Icons.unfold_less : Icons.unfold_more,
+                            _shouldExpandAll
+                                ? Icons.unfold_less
+                                : Icons.unfold_more,
                             size: 18,
                             color: cTextTint,
                           ),
@@ -272,80 +248,64 @@ class ProductListScreenState extends State<ProductListScreen> {
 
             // Product List
             Expanded(
-              child: Stack(
-                children: [
-                  RefreshIndicator(
-                    onRefresh: () => _refreshProducts(context),
-                    child: Scrollbar(
-                      // Using native Scrollbar for the visual line
-                      controller: _scrollController,
-                      thumbVisibility: true,
-                      interactive: true,
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
-                        itemCount: sortedProducts.length,
-                        itemBuilder: (ctx, i) {
-                          return ProductListItem(
-                            key: ValueKey(sortedProducts[i].id),
-                            product: sortedProducts[i],
-                            expandTriggerVersion: _expandTriggerVersion,
-                            shouldExpand: _shouldExpandAll,
-                          );
-                        },
-                      ),
-                    ),
-                  ),
+              child: RefreshIndicator(
+                onRefresh: () => _refreshProducts(context),
+                child: Scrollbar(
+                  controller: _scrollController,
+                  thumbVisibility: true,
+                  interactive: true,
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+                    // Logic to combine active list, optional header, and inactive list
+                    itemCount: activeProducts.length +
+                        (inactiveProducts.isEmpty
+                            ? 0
+                            : 1 + inactiveProducts.length),
+                    itemBuilder: (ctx, i) {
+                      // 1. Render Active Products
+                      if (i < activeProducts.length) {
+                        return ProductListItem(
+                          key: ValueKey(activeProducts[i].id),
+                          product: activeProducts[i],
+                          expandTriggerVersion: _expandTriggerVersion,
+                          shouldExpand: _shouldExpandAll,
+                        );
+                      }
 
-                  // Invisible Touch Area for "Bubble Dragging"
-                  if (sortedProducts.isNotEmpty)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return GestureDetector(
-                              onVerticalDragStart: (details) => _onVerticalDragStart(details, constraints.maxHeight, sortedProducts.length, sortedProducts),
-                              onVerticalDragUpdate: (details) => _onVerticalDragUpdate(details, constraints.maxHeight, sortedProducts.length, sortedProducts),
-                              onVerticalDragEnd: _onVerticalDragEnd,
-                              behavior: HitTestBehavior.opaque,
-                              child: Container(
-                                width: 30, // Touch target width
-                                color: Colors.transparent, // Invisible
-                                alignment: Alignment.centerRight,
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  alignment: Alignment.center,
-                                  children: [
-                                    if (_isDragging)
-                                      Positioned(
-                                        top: _dragPosition - 30,
-                                        right: 40,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                              color: cCard,
-                                              shape: BoxShape.circle,
-                                              border: Border.all(color: cTextTint, width: 1.5),
-                                              boxShadow: [
-                                                BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 3))
-                                              ]
-                                          ),
-                                          child: Text(
-                                            _currentLetter,
-                                            style: const TextStyle(color: cTextTint, fontSize: 20, fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      ),
-                                  ],
+                      // 2. Render Header for Inactive Products
+                      if (i == activeProducts.length) {
+                        return const Padding(
+                          padding: EdgeInsets.only(top: 24.0, bottom: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Divider(color: Colors.white24),
+                              SizedBox(height: 8),
+                              Text(
+                                "Out of Stock / Inactive Products",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.redAccent,
                                 ),
                               ),
-                            );
-                          }
-                      ),
-                    ),
-                ],
+                            ],
+                          ),
+                        );
+                      }
+
+                      // 3. Render Inactive Products
+                      final inactiveIndex = i - activeProducts.length - 1;
+                      return ProductListItem(
+                        key: ValueKey(inactiveProducts[inactiveIndex].id),
+                        product: inactiveProducts[inactiveIndex],
+                        expandTriggerVersion: _expandTriggerVersion,
+                        shouldExpand: _shouldExpandAll,
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ],
@@ -385,8 +345,8 @@ class ProductListItem extends StatefulWidget {
 class _ProductListItemState extends State<ProductListItem> {
   bool _isExpanded = false;
   bool _isEditing = false;
-  late TextEditingController _price300gController;
-  late TextEditingController _price1kgController;
+  late TextEditingController _price1Controller;
+  late TextEditingController _price2Controller;
   int _lastSeenTriggerVersion = -1;
 
   // Colors
@@ -394,31 +354,17 @@ class _ProductListItemState extends State<ProductListItem> {
   static const Color cTextTint = Color(0xFFE3EED4);
   static const Color cSubText = Color(0xFFB0C4B1);
 
-  ProductVariant? get _variant300g {
-    try {
-      return widget.product.variants.firstWhere(
-            (v) => v.label.toLowerCase().contains('300 g') || v.variantId.contains('300g'),
-      );
-    } catch (e) {
-      return null;
-    }
-  }
-
-  ProductVariant? get _variant1kg {
-    try {
-      return widget.product.variants.firstWhere(
-            (v) => v.label.toLowerCase().contains('1 kg') || v.variantId.contains('1kg'),
-      );
-    } catch (e) {
-      return null;
-    }
-  }
+  // Dynamic variants
+  ProductVariant? get _variant1 =>
+      widget.product.variants.isNotEmpty ? widget.product.variants[0] : null;
+  ProductVariant? get _variant2 =>
+      widget.product.variants.length > 1 ? widget.product.variants[1] : null;
 
   @override
   void initState() {
     super.initState();
-    _price300gController = TextEditingController();
-    _price1kgController = TextEditingController();
+    _price1Controller = TextEditingController();
+    _price2Controller = TextEditingController();
     _updateControllers();
     _handleExpandTrigger();
   }
@@ -443,8 +389,8 @@ class _ProductListItemState extends State<ProductListItem> {
   }
 
   void _updateControllers() {
-    _price300gController.text = _variant300g?.ourPrice.toStringAsFixed(0) ?? '';
-    _price1kgController.text = _variant1kg?.ourPrice.toStringAsFixed(0) ?? '';
+    _price1Controller.text = _variant1?.ourPrice.toStringAsFixed(0) ?? '';
+    _price2Controller.text = _variant2?.ourPrice.toStringAsFixed(0) ?? '';
   }
 
   // --- Logic to Reset/Cancel Edits ---
@@ -458,8 +404,8 @@ class _ProductListItemState extends State<ProductListItem> {
 
   @override
   void dispose() {
-    _price300gController.dispose();
-    _price1kgController.dispose();
+    _price1Controller.dispose();
+    _price2Controller.dispose();
     super.dispose();
   }
 
@@ -467,17 +413,17 @@ class _ProductListItemState extends State<ProductListItem> {
     final provider = Provider.of<ProductProvider>(context, listen: false);
     bool changed = false;
 
-    if (_variant300g != null) {
-      double? newVal = double.tryParse(_price300gController.text);
-      if (newVal != null && newVal != _variant300g!.ourPrice) {
-        _variant300g!.ourPrice = newVal;
+    if (_variant1 != null) {
+      double? newVal = double.tryParse(_price1Controller.text);
+      if (newVal != null && newVal != _variant1!.ourPrice) {
+        _variant1!.ourPrice = newVal;
         changed = true;
       }
     }
-    if (_variant1kg != null) {
-      double? newVal = double.tryParse(_price1kgController.text);
-      if (newVal != null && newVal != _variant1kg!.ourPrice) {
-        _variant1kg!.ourPrice = newVal;
+    if (_variant2 != null) {
+      double? newVal = double.tryParse(_price2Controller.text);
+      if (newVal != null && newVal != _variant2!.ourPrice) {
+        _variant2!.ourPrice = newVal;
         changed = true;
       }
     }
@@ -486,7 +432,8 @@ class _ProductListItemState extends State<ProductListItem> {
       await provider.updateProduct(widget.product);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Price updated"), duration: Duration(seconds: 1)),
+          const SnackBar(
+              content: Text("Price updated"), duration: Duration(seconds: 1)),
         );
       }
     }
@@ -498,15 +445,15 @@ class _ProductListItemState extends State<ProductListItem> {
 
   @override
   Widget build(BuildContext context) {
-    final v300 = _variant300g;
-    final v1kg = _variant1kg;
-    final has300g = v300 != null;
-    final has1kg = v1kg != null;
+    final v1 = _variant1;
+    final v2 = _variant2;
+    final hasV1 = v1 != null;
+    final hasV2 = v2 != null;
 
     Widget buildAvatar() {
       if (widget.product.imageUrl.isNotEmpty) {
         return CircleAvatar(
-          radius: 18,
+          radius: 25, // Increased size
           backgroundImage: NetworkImage(widget.product.imageUrl),
           backgroundColor: Colors.white24,
         );
@@ -515,7 +462,7 @@ class _ProductListItemState extends State<ProductListItem> {
             ? widget.product.hinglishName[0].toUpperCase()
             : '?';
         return CircleAvatar(
-          radius: 18,
+          radius: 25, // Increased size
           backgroundColor: cTextTint,
           child: Text(
             initial,
@@ -525,39 +472,74 @@ class _ProductListItemState extends State<ProductListItem> {
       }
     }
 
+    // Helper method for requirement 1: Cursor to end on tap
+    void moveCursorToEnd(TextEditingController controller) {
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length),
+      );
+    }
+
     return Card(
       elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 2), // Reduced vertical spacing
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 2),
       color: cCard,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20), // More circular corners
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
           ListTile(
-            visualDensity: VisualDensity.compact, // Decreased height
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+            visualDensity: VisualDensity.compact,
+            contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             leading: buildAvatar(),
             title: Text(
               widget.product.hinglishName,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 16,
+                fontSize: 18, // Increased size
                 color: cTextTint,
               ),
             ),
-            subtitle: widget.product.englishName.isNotEmpty
-                ? Text(widget.product.englishName, style: const TextStyle(fontSize: 12, color: cSubText))
-                : null,
-            trailing: IconButton(
-              icon: const Icon(Icons.edit, color: cTextTint),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ProductEditScreen(product: widget.product),
-                  ),
-                );
-              },
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Quick Edit Pencil (Requirement 2: Toggle Behavior)
+                IconButton(
+                  icon: Icon(
+                      _isExpanded ? Icons.keyboard_arrow_up : Icons.edit,
+                      color: cSubText),
+                  onPressed: () {
+                    setState(() {
+                      // Toggle expansion logic
+                      if (_isExpanded) {
+                        // If already expanded, collapse it
+                        _isExpanded = false;
+                        _isEditing = false;
+                      } else {
+                        // If collapsed, expand and enable editing
+                        _isExpanded = true;
+                        _isEditing = true;
+                        _updateControllers();
+                      }
+                    });
+                  },
+                  tooltip: _isExpanded ? 'Collapse' : 'Quick Edit',
+                ),
+                // Full Edit Arrow
+                IconButton(
+                  icon: const Icon(Icons.chevron_right, color: cTextTint),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            ProductEditScreen(product: widget.product),
+                      ),
+                    );
+                  },
+                  tooltip: 'Edit Product Details',
+                ),
+              ],
             ),
             onTap: () {
               setState(() {
@@ -566,17 +548,19 @@ class _ProductListItemState extends State<ProductListItem> {
               });
             },
           ),
-
           if (_isExpanded)
-          // TapRegion detects clicks outside this container
             TapRegion(
               onTapOutside: (event) {
                 if (_isEditing) {
+                  // Requirement 1: Only clicks outside disable it.
+                  // TapRegion handles clicks *outside* this container.
+                  // Interacting inside (dragging cursor) won't trigger this.
                   _cancelEdits();
                 }
               },
               child: Container(
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 0),
+                padding: const EdgeInsets.only(
+                    left: 16, right: 16, bottom: 12, top: 0),
                 child: Column(
                   children: [
                     const Divider(color: Colors.white12, height: 16),
@@ -586,57 +570,95 @@ class _ProductListItemState extends State<ProductListItem> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
+                              // Variant 1 Column
                               Column(
                                 children: [
-                                  const Text("300g", style: TextStyle(fontSize: 11, color: cSubText)),
+                                  Text(hasV1 ? v1.label : "Var 1",
+                                      style: const TextStyle(
+                                          fontSize: 11, color: cSubText)),
                                   const SizedBox(height: 2),
-                                  _isEditing && has300g
+                                  _isEditing && hasV1
                                       ? SizedBox(
                                     width: 60,
                                     height: 30,
                                     child: TextField(
-                                      controller: _price300gController,
+                                      controller: _price1Controller,
                                       keyboardType: TextInputType.number,
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(color: cCard, fontSize: 13, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          color: cCard,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold),
+                                      // Requirement 1: Cursor to end on tap
+                                      onTap: () => moveCursorToEnd(
+                                          _price1Controller),
                                       decoration: InputDecoration(
                                         filled: true,
                                         fillColor: cTextTint,
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                                        contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                            vertical: 0),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                            BorderRadius.circular(8),
+                                            borderSide: BorderSide.none),
                                       ),
                                     ),
                                   )
                                       : Text(
-                                    has300g ? "₹${v300.ourPrice.toStringAsFixed(0)}" : "-",
-                                    style: const TextStyle(fontWeight: FontWeight.bold, color: cTextTint),
+                                    hasV1
+                                        ? "₹${v1.ourPrice.toStringAsFixed(0)}"
+                                        : "-",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: cTextTint),
                                   ),
                                 ],
                               ),
+                              // Variant 2 Column
                               Column(
                                 children: [
-                                  const Text("1kg", style: TextStyle(fontSize: 11, color: cSubText)),
+                                  Text(hasV2 ? v2.label : "Var 2",
+                                      style: const TextStyle(
+                                          fontSize: 11, color: cSubText)),
                                   const SizedBox(height: 2),
-                                  _isEditing && has1kg
+                                  _isEditing && hasV2
                                       ? SizedBox(
                                     width: 60,
                                     height: 30,
                                     child: TextField(
-                                      controller: _price1kgController,
+                                      controller: _price2Controller,
                                       keyboardType: TextInputType.number,
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(color: cCard, fontSize: 13, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          color: cCard,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold),
+                                      // Requirement 1: Cursor to end on tap
+                                      onTap: () => moveCursorToEnd(
+                                          _price2Controller),
                                       decoration: InputDecoration(
                                         filled: true,
                                         fillColor: cTextTint,
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                                        contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                            vertical: 0),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                            BorderRadius.circular(8),
+                                            borderSide: BorderSide.none),
                                       ),
                                     ),
                                   )
                                       : Text(
-                                    has1kg ? "₹${v1kg.ourPrice.toStringAsFixed(0)}" : "-",
-                                    style: const TextStyle(fontWeight: FontWeight.bold, color: cTextTint),
+                                    hasV2
+                                        ? "₹${v2.ourPrice.toStringAsFixed(0)}"
+                                        : "-",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: cTextTint),
                                   ),
                                 ],
                               ),
@@ -660,19 +682,7 @@ class _ProductListItemState extends State<ProductListItem> {
                                 onPressed: _saveQuickEdits,
                                 tooltip: 'Save Price',
                               ),
-                            ] else
-                              IconButton(
-                                // Changed icon to Pencil (Icons.edit) as requested
-                                icon: const Icon(Icons.edit),
-                                color: cSubText,
-                                onPressed: () {
-                                  setState(() {
-                                    _updateControllers();
-                                    _isEditing = true;
-                                  });
-                                },
-                                tooltip: 'Quick Edit',
-                              ),
+                            ]
                           ],
                         )
                       ],

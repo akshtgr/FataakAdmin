@@ -170,6 +170,40 @@ class ProductEditScreenState extends State<ProductEditScreen> {
     }
   }
 
+  // Requirement 4: Delete Product Logic
+  void _deleteProduct() async {
+    if (widget.product == null) return; // Should not happen if button is only shown when editing
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        title: const Text('Delete Product?', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Are you sure you want to delete this product? This action cannot be undone.',
+          style: TextStyle(color: cTextTint),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancel', style: TextStyle(color: cTextTint)),
+            onPressed: () => Navigator.of(ctx).pop(false),
+          ),
+          TextButton(
+            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+            onPressed: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true && mounted) {
+      await Provider.of<ProductProvider>(context, listen: false).deleteProduct(widget.product!.id);
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
   Widget _buildSectionCard({required String title, required List<Widget> children}) {
     return Card(
       color: cCard,
@@ -284,7 +318,6 @@ class ProductEditScreenState extends State<ProductEditScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: GestureDetector(
-        // Requirement 2: Dismiss keyboard/cursor on tap outside
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Scaffold(
           backgroundColor: cBackground,
@@ -429,7 +462,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                             decoration: _buildInputDecoration('English Name'),
                             style: const TextStyle(color: cTextTint),
                             cursorColor: cBackground,
-                            maxLines: null, // Requirement 5
+                            maxLines: null,
                             keyboardType: TextInputType.multiline,
                             validator: (val) => val!.isEmpty ? 'Required' : null,
                           ),
@@ -476,7 +509,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                             decoration: _buildInputDecoration('Description'),
                             style: const TextStyle(color: cTextTint),
                             cursorColor: cBackground,
-                            maxLines: null, // Requirement 5: Expand vertically
+                            maxLines: null,
                             keyboardType: TextInputType.multiline,
                           ),
                         ],
@@ -491,7 +524,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                             decoration: _buildInputDecoration('Suitable For (comma separated)'),
                             style: const TextStyle(color: cTextTint),
                             cursorColor: cBackground,
-                            maxLines: null, // Requirement 5
+                            maxLines: null,
                             keyboardType: TextInputType.multiline,
                           ),
                           const SizedBox(height: 12),
@@ -518,7 +551,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                             decoration: _buildInputDecoration('Health Benefits (one per line)'),
                             style: const TextStyle(color: cTextTint),
                             cursorColor: cBackground,
-                            maxLines: null, // Requirement 5
+                            maxLines: null,
                             keyboardType: TextInputType.multiline,
                           ),
                         ],
@@ -555,6 +588,30 @@ class ProductEditScreenState extends State<ProductEditScreen> {
                           )
                         ],
                       ),
+
+                      // Requirement 4: Delete Product Button (Shown only in edit mode)
+                      if (widget.product != null) ...[
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: TextButton.icon(
+                            onPressed: _deleteProduct,
+                            icon: const Icon(Icons.delete, color: Colors.redAccent),
+                            label: const Text(
+                              "Delete Product",
+                              style: TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: cCard,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: const BorderSide(color: Colors.redAccent, width: 1.5),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -564,7 +621,7 @@ class ProductEditScreenState extends State<ProductEditScreen> {
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 10), // Requirement 3: Adjusted to 10 for "more below"
+                  padding: const EdgeInsets.only(bottom: 10),
                   child: FloatingActionButton.extended(
                     onPressed: _saveForm,
                     backgroundColor: cTextTint,
